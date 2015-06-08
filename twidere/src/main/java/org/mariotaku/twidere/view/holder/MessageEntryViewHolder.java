@@ -31,9 +31,9 @@ import android.widget.TextView;
 import org.mariotaku.twidere.R;
 import org.mariotaku.twidere.adapter.MessageEntriesAdapter;
 import org.mariotaku.twidere.provider.TwidereDataStore.DirectMessages.ConversationEntries;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.util.UserColorNameManager;
 import org.mariotaku.twidere.util.Utils;
+import org.mariotaku.twidere.view.ProfileImageView;
 import org.mariotaku.twidere.view.ShortTimeView;
 import org.mariotaku.twidere.view.iface.IColorLabelView;
 
@@ -41,7 +41,7 @@ import static org.mariotaku.twidere.util.HtmlEscapeHelper.toPlainText;
 
 public class MessageEntryViewHolder extends ViewHolder implements OnClickListener {
 
-    public final ImageView profileImageView;
+    public final ProfileImageView profileImageView;
     public final TextView nameView, screenNameView, textView;
     public final ShortTimeView timeView;
     private final MessageEntriesAdapter adapter;
@@ -51,7 +51,7 @@ public class MessageEntryViewHolder extends ViewHolder implements OnClickListene
         super(itemView);
         this.adapter = adapter;
         content = (IColorLabelView) itemView.findViewById(R.id.content);
-        profileImageView = (ImageView) itemView.findViewById(R.id.profile_image);
+        profileImageView = (ProfileImageView) itemView.findViewById(R.id.profile_image);
         nameView = (TextView) itemView.findViewById(R.id.name);
         screenNameView = (TextView) itemView.findViewById(R.id.screen_name);
         textView = (TextView) itemView.findViewById(R.id.text);
@@ -64,7 +64,6 @@ public class MessageEntryViewHolder extends ViewHolder implements OnClickListene
 
     public void displayMessage(Cursor cursor, boolean isUnread) {
         final Context context = adapter.getContext();
-        final MediaLoaderWrapper loader = adapter.getMediaLoader();
         final UserColorNameManager manager = adapter.getUserColorNameManager();
 
         final long accountId = cursor.getLong(ConversationEntries.IDX_ACCOUNT_ID);

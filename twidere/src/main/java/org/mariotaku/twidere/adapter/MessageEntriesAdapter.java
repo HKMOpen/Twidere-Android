@@ -38,7 +38,6 @@ import org.mariotaku.twidere.app.TwidereApplication;
 import org.mariotaku.twidere.model.StringLongPair;
 import org.mariotaku.twidere.provider.TwidereDataStore.DirectMessages.ConversationEntries;
 import org.mariotaku.twidere.util.AsyncTwitterWrapper;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.util.MultiSelectManager;
 import org.mariotaku.twidere.util.ReadStateManager;
 import org.mariotaku.twidere.util.ReadStateManager.OnReadStateChangeListener;
@@ -56,7 +55,6 @@ public class MessageEntriesAdapter extends Adapter<ViewHolder> implements Consta
 
     private final Context mContext;
     private final LayoutInflater mInflater;
-    private final MediaLoaderWrapper mImageLoader;
     private final MultiSelectManager mMultiSelectManager;
     private final int mTextSize;
     private final int mProfileImageStyle;
@@ -79,7 +77,6 @@ public class MessageEntriesAdapter extends Adapter<ViewHolder> implements Consta
         mInflater = LayoutInflater.from(context);
         final TwidereApplication app = TwidereApplication.getInstance(context);
         mMultiSelectManager = app.getMultiSelectManager();
-        mImageLoader = app.getMediaLoaderWrapper();
         mTwitterWrapper = app.getTwitterWrapper();
         final SharedPreferencesWrapper preferences = SharedPreferencesWrapper.getInstance(context,
                 SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
@@ -128,11 +125,6 @@ public class MessageEntriesAdapter extends Adapter<ViewHolder> implements Consta
         final Cursor c = mCursor;
         if (c == null || c.isClosed() || !c.moveToPosition(position)) return null;
         return new DirectMessageEntry(c);
-    }
-
-    @Override
-    public MediaLoaderWrapper getMediaLoader() {
-        return mImageLoader;
     }
 
     @Override

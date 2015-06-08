@@ -43,12 +43,13 @@ import org.mariotaku.twidere.app.TwidereApplication;
 import org.mariotaku.twidere.provider.TwidereDataStore.CachedHashtags;
 import org.mariotaku.twidere.provider.TwidereDataStore.CachedUsers;
 import org.mariotaku.twidere.provider.TwidereDataStore.CachedValues;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.util.ParseUtils;
 import org.mariotaku.twidere.util.SharedPreferencesWrapper;
 import org.mariotaku.twidere.util.UserColorNameManager;
 import org.mariotaku.twidere.util.Utils;
+import org.mariotaku.twidere.view.ProfileImageView;
 import org.mariotaku.twidere.view.ShapedImageView;
+import org.mariotaku.twidere.view.holder.loader;
 
 
 public class UserHashtagAutoCompleteAdapter extends SimpleCursorAdapter implements Constants {
@@ -60,8 +61,6 @@ public class UserHashtagAutoCompleteAdapter extends SimpleCursorAdapter implemen
     private final ContentResolver mResolver;
     @NonNull
     private final SQLiteDatabase mDatabase;
-    @NonNull
-    private final MediaLoaderWrapper mProfileImageLoader;
     @NonNull
     private final SharedPreferencesWrapper mPreferences;
     @NonNull
@@ -87,7 +86,6 @@ public class UserHashtagAutoCompleteAdapter extends SimpleCursorAdapter implemen
         mPreferences = SharedPreferencesWrapper.getInstance(context, SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
         mUserColorNameManager = app.getUserColorNameManager();
         mResolver = context.getContentResolver();
-        mProfileImageLoader = app.getMediaLoaderWrapper();
         mDatabase = app.getSQLiteDatabase();
         mDisplayProfileImage = mPreferences.getBoolean(KEY_DISPLAY_PROFILE_IMAGE, true);
         mProfileImageStyle = Utils.getProfileImageStyle(mPreferences.getString(KEY_PROFILE_IMAGE_STYLE, null));
@@ -102,7 +100,7 @@ public class UserHashtagAutoCompleteAdapter extends SimpleCursorAdapter implemen
         if (isCursorClosed()) return;
         final TextView text1 = (TextView) view.findViewById(android.R.id.text1);
         final TextView text2 = (TextView) view.findViewById(android.R.id.text2);
-        final ShapedImageView icon = (ShapedImageView) view.findViewById(android.R.id.icon);
+        final ProfileImageView icon = (ProfileImageView) view.findViewById(android.R.id.icon);
 
         // Clear images in order to prevent images in recycled view shown.
         icon.setImageDrawable(null);
@@ -118,15 +116,13 @@ public class UserHashtagAutoCompleteAdapter extends SimpleCursorAdapter implemen
         if (mProfileImageUrlIdx != -1) {
             if (mDisplayProfileImage) {
                 final String profileImageUrl = cursor.getString(mProfileImageUrlIdx);
-                mProfileImageLoader.displayProfileImage(icon, profileImageUrl);
-                icon.setStyle(mProfileImageStyle);
+                loader.displayProfileImage(icon, profileImageUrl);
             } else {
-                mProfileImageLoader.cancelDisplayTask(icon);
+                loader.cancelDisplayTask(icon);
             }
             icon.clearColorFilter();
         } else {
-            icon.setStyle(mProfileImageStyle);
-            icon.setImageResource(R.drawable.ic_action_hashtag);
+            icon.setImageURI(Utils.getResourceUri(R.drawable.ic_action_hashtag));
             icon.setColorFilter(text1.getCurrentTextColor(), Mode.SRC_ATOP);
         }
         super.bindView(view, context, cursor);

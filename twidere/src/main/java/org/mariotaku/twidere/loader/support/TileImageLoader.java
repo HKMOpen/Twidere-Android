@@ -30,15 +30,11 @@ import android.os.Handler;
 import android.support.v4.content.AsyncTaskLoader;
 import android.util.DisplayMetrics;
 
-import com.nostra13.universalimageloader.cache.disc.DiskCache;
-import com.nostra13.universalimageloader.core.download.ImageDownloader;
-import com.nostra13.universalimageloader.utils.IoUtils;
-
 import org.mariotaku.twidere.app.TwidereApplication;
 import org.mariotaku.twidere.util.BitmapUtils;
 import org.mariotaku.twidere.util.Exif;
 import org.mariotaku.twidere.util.ImageValidator;
-import org.mariotaku.twidere.util.imageloader.AccountExtra;
+import org.mariotaku.twidere.util.Utils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -51,8 +47,6 @@ public class TileImageLoader extends AsyncTaskLoader<TileImageLoader.Result> {
     private final Uri mUri;
     private final Handler mHandler;
     private final DownloadListener mListener;
-    private final ImageDownloader mDownloader;
-    private final DiskCache mDiskCache;
 
     private final float mFallbackSize;
     private final long mAccountId;
@@ -64,8 +58,6 @@ public class TileImageLoader extends AsyncTaskLoader<TileImageLoader.Result> {
         mUri = uri;
         mListener = listener;
         final TwidereApplication app = TwidereApplication.getInstance(context);
-        mDownloader = app.getFullImageDownloader();
-        mDiskCache = app.getFullDiskCache();
         final Resources res = context.getResources();
         final DisplayMetrics dm = res.getDisplayMetrics();
         mFallbackSize = Math.max(dm.heightPixels, dm.widthPixels);
@@ -80,7 +72,8 @@ public class TileImageLoader extends AsyncTaskLoader<TileImageLoader.Result> {
         if ("http".equals(scheme) || "https".equals(scheme)) {
             final String url = mUri.toString();
             if (url == null) return Result.nullInstance();
-            final File cacheFile = mDiskCache.get(url);
+//            final File cacheFile = mDiskCache.get(url);
+            final File cacheFile = null;
             if (cacheFile != null) {
                 final File cacheDir = cacheFile.getParentFile();
                 if (cacheDir != null && !cacheDir.exists()) {
@@ -96,7 +89,8 @@ public class TileImageLoader extends AsyncTaskLoader<TileImageLoader.Result> {
                     // cache.
                     return decodeBitmapOnly(cacheFile, ImageValidator.isValidForRegionDecoder(cachedValidity));
                 }
-                final InputStream is = mDownloader.getStream(url, new AccountExtra(mAccountId));
+//                final InputStream is = mDownloader.getStream(url, new AccountExtra(mAccountId));
+                final InputStream is = null;
                 if (is == null) return Result.nullInstance();
                 final long length = is.available();
                 mHandler.post(new DownloadStartRunnable(this, mListener, length));
@@ -105,8 +99,8 @@ public class TileImageLoader extends AsyncTaskLoader<TileImageLoader.Result> {
                     dump(is, os);
                     mHandler.post(new DownloadFinishRunnable(this, mListener));
                 } finally {
-                    IoUtils.closeSilently(is);
-                    IoUtils.closeSilently(os);
+                    Utils.closeSilently(is);
+                    Utils.closeSilently(os);
                 }
                 final int downloadedValidity = ImageValidator.checkImageValidity(cacheFile);
                 if (ImageValidator.isValid(downloadedValidity)) {

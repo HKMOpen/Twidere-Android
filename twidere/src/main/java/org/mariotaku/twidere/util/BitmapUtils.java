@@ -26,7 +26,6 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
-import com.nostra13.universalimageloader.utils.IoUtils;
 
 import org.mariotaku.twidere.TwidereConstants;
 
@@ -81,7 +80,7 @@ public class BitmapUtils {
             } catch (final IllegalArgumentException e) {
                 return false;
             } finally {
-                IoUtils.closeSilently(fos);
+                Utils.closeSilently(fos);
             }
         } else if (imageFile.length() > TwidereConstants.TWITTER_MAX_IMAGE_SIZE) {
             // The file size is larger than Twitter's limit.
@@ -95,7 +94,7 @@ public class BitmapUtils {
             } catch (final FileNotFoundException e) {
                 // This shouldn't happen.
             } finally {
-                IoUtils.closeSilently(fos);
+                Utils.closeSilently(fos);
             }
         }
         return true;

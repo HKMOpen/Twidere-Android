@@ -26,7 +26,6 @@ import org.mariotaku.twidere.model.ParcelableMedia;
 import org.mariotaku.twidere.model.ParcelableStatus;
 import org.mariotaku.twidere.model.ParcelableStatus.CursorIndices;
 import org.mariotaku.twidere.util.AsyncTwitterWrapper;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.util.MediaLoadingHandler;
 import org.mariotaku.twidere.util.SharedPreferencesWrapper;
 import org.mariotaku.twidere.util.TwidereLinkify;
@@ -37,6 +36,7 @@ import org.mariotaku.twidere.view.CardMediaContainer;
 import org.mariotaku.twidere.view.CardMediaContainer.OnMediaClickListener;
 import org.mariotaku.twidere.view.ForegroundColorView;
 import org.mariotaku.twidere.view.NameView;
+import org.mariotaku.twidere.view.ProfileImageView;
 import org.mariotaku.twidere.view.ShortTimeView;
 import org.mariotaku.twidere.view.iface.IColorLabelView;
 
@@ -57,7 +57,7 @@ public class StatusViewHolder extends ViewHolder implements Constants, OnClickLi
     private final IStatusesAdapter<?> adapter;
 
     private final ImageView replyRetweetIcon;
-    private final ImageView profileImageView;
+    private final ProfileImageView profileImageView;
     private final ImageView profileTypeView;
     private final ImageView extraTypeView;
     private final TextView textView;
@@ -79,7 +79,7 @@ public class StatusViewHolder extends ViewHolder implements Constants, OnClickLi
         super(itemView);
         this.adapter = adapter;
         itemContent = (IColorLabelView) itemView.findViewById(R.id.item_content);
-        profileImageView = (ImageView) itemView.findViewById(R.id.profile_image);
+        profileImageView = (ProfileImageView) itemView.findViewById(R.id.profile_image);
         profileTypeView = (ImageView) itemView.findViewById(R.id.profile_type);
         extraTypeView = (ImageView) itemView.findViewById(R.id.extra_type);
         textView = (TextView) itemView.findViewById(R.id.text);
@@ -110,7 +110,7 @@ public class StatusViewHolder extends ViewHolder implements Constants, OnClickLi
 
     public void displaySampleStatus() {
         profileImageView.setVisibility(adapter.isProfileImageEnabled() ? View.VISIBLE : View.GONE);
-        profileImageView.setImageResource(R.mipmap.ic_launcher);
+        profileImageView.setImageURI(Utils.getResourceUri(R.mipmap.ic_launcher));
         nameView.setName(TWIDERE_PREVIEW_NAME);
         nameView.setScreenName("@" + TWIDERE_PREVIEW_SCREEN_NAME);
         if (adapter.getLinkHighlightingStyle() == VALUE_LINK_HIGHLIGHT_OPTION_CODE_NONE) {
@@ -132,7 +132,6 @@ public class StatusViewHolder extends ViewHolder implements Constants, OnClickLi
 
     public void displayStatus(@NonNull final ParcelableStatus status, @Nullable final TranslationResult translation,
                               final boolean displayInReplyTo, final boolean shouldDisplayExtraType) {
-        final MediaLoaderWrapper loader = adapter.getMediaLoader();
         final AsyncTwitterWrapper twitter = adapter.getTwitterWrapper();
         final TwidereLinkify linkify = adapter.getTwidereLinkify();
         final UserColorNameManager manager = adapter.getUserColorNameManager();
@@ -262,7 +261,7 @@ public class StatusViewHolder extends ViewHolder implements Constants, OnClickLi
             final boolean hasMedia = status.media != null && status.media.length > 0;
             if (hasMedia && (adapter.isSensitiveContentEnabled() || !status.is_possibly_sensitive)) {
                 mediaPreview.setVisibility(View.VISIBLE);
-                mediaPreview.displayMedia(status.media, loader, status.account_id, this,
+                mediaPreview.displayMedia(status.media, status.account_id, this,
                         adapter.getMediaLoadingHandler());
             } else {
                 mediaPreview.setVisibility(View.GONE);
@@ -331,7 +330,6 @@ public class StatusViewHolder extends ViewHolder implements Constants, OnClickLi
 
     public void displayStatus(@NonNull Cursor cursor, @NonNull CursorIndices indices,
                               final boolean displayInReplyTo) {
-        final MediaLoaderWrapper loader = adapter.getMediaLoader();
         final AsyncTwitterWrapper twitter = adapter.getTwitterWrapper();
         final TwidereLinkify linkify = adapter.getTwidereLinkify();
         final UserColorNameManager manager = adapter.getUserColorNameManager();
@@ -484,7 +482,7 @@ public class StatusViewHolder extends ViewHolder implements Constants, OnClickLi
             final boolean hasMedia = media != null && media.length > 0;
             if (hasMedia && (adapter.isSensitiveContentEnabled() || !sensitive)) {
                 mediaPreview.setVisibility(View.VISIBLE);
-                mediaPreview.displayMedia(media, loader, account_id, this, adapter.getMediaLoadingHandler());
+                mediaPreview.displayMedia(media, account_id, this, adapter.getMediaLoadingHandler());
             } else {
                 mediaPreview.setVisibility(View.GONE);
             }
@@ -688,7 +686,6 @@ public class StatusViewHolder extends ViewHolder implements Constants, OnClickLi
 
         private final Context context;
         private final SharedPreferencesWrapper preferences;
-        private final MediaLoaderWrapper loader;
         private final MediaLoadingHandler handler;
         private final AsyncTwitterWrapper twitter;
         private final TwidereLinkify linkify;
@@ -708,7 +705,6 @@ public class StatusViewHolder extends ViewHolder implements Constants, OnClickLi
             this.context = context;
             preferences = SharedPreferencesWrapper.getInstance(context, SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
             final TwidereApplication app = TwidereApplication.getInstance(context);
-            loader = app.getMediaLoaderWrapper();
             handler = new MediaLoadingHandler(R.id.media_preview_progress);
             twitter = app.getTwitterWrapper();
             manager = app.getUserColorNameManager();
@@ -716,10 +712,6 @@ public class StatusViewHolder extends ViewHolder implements Constants, OnClickLi
             updateOptions();
         }
 
-        @Override
-        public MediaLoaderWrapper getMediaLoader() {
-            return loader;
-        }
 
         @Override
         public Context getContext() {

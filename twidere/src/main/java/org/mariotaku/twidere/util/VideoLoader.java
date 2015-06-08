@@ -20,22 +20,15 @@
 package org.mariotaku.twidere.util;
 
 import android.content.Context;
-import android.util.Log;
 
-import com.nostra13.universalimageloader.cache.disc.DiskCache;
-import com.nostra13.universalimageloader.core.download.ImageDownloader;
-import com.nostra13.universalimageloader.utils.IoUtils;
 import com.squareup.otto.Bus;
 
 import org.mariotaku.twidere.app.TwidereApplication;
 import org.mariotaku.twidere.model.SingleResponse;
 import org.mariotaku.twidere.task.ManagedAsyncTask;
-import org.mariotaku.twidere.util.imageloader.TwidereImageDownloader;
 import org.mariotaku.twidere.util.message.VideoLoadFinishedEvent;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 
 
 /**
@@ -44,28 +37,24 @@ import java.io.InputStream;
 public class VideoLoader {
 
     private final Context mContext;
-    private final DiskCache mDiskCache;
-    private final ImageDownloader mImageDownloader;
     private final AsyncTaskManager mTaskManager;
     private final Bus mBus;
 
     public VideoLoader(Context context) {
         final TwidereApplication app = TwidereApplication.getInstance(context);
         mContext = context;
-        mDiskCache = app.getDiskCache();
-        mImageDownloader = new TwidereImageDownloader(context, false, false);
         mTaskManager = app.getAsyncTaskManager();
         mBus = app.getMessageBus();
     }
 
     public File getCachedVideoFile(final String url, boolean loadIfNotFound) {
         if (url == null) return null;
-        final File cache = mDiskCache.get(url);
-        if (cache.exists())
-            return cache;
-        else if (loadIfNotFound) {
-            loadVideo(url, null);
-        }
+//        final File cache = mDiskCache.get(url);
+//        if (cache.exists())
+//            return cache;
+//        else if (loadIfNotFound) {
+//            loadVideo(url, null);
+//        }
         return null;
     }
 
@@ -98,7 +87,7 @@ public class VideoLoader {
         void onVideoLoadingStarted(String uri, VideoLoadingListener listener);
     }
 
-    private static class PreLoadVideoTask extends ManagedAsyncTask<Object, Integer, SingleResponse<File>> implements IoUtils.CopyListener {
+    private static class PreLoadVideoTask extends ManagedAsyncTask<Object, Integer, SingleResponse<File>> {
 
         private final VideoLoader mPreLoader;
         private final VideoLoadingListener mListener;
@@ -111,7 +100,6 @@ public class VideoLoader {
             mUri = uri;
         }
 
-        @Override
         public boolean onBytesCopied(int current, int total) {
             if (isCancelled()) return false;
             publishProgress(current, total);
@@ -120,18 +108,18 @@ public class VideoLoader {
 
         @Override
         protected SingleResponse<File> doInBackground(Object... params) {
-            final File file = mPreLoader.mDiskCache.get(mUri);
-            if (file.isFile() && file.length() > 0) return SingleResponse.getInstance(file);
-            try {
-                final InputStream is = mPreLoader.mImageDownloader.getStream(mUri, null);
-                mPreLoader.mDiskCache.save(mUri, is, this);
-                IoUtils.closeSilently(is);
-            } catch (IOException e) {
-                mPreLoader.mDiskCache.remove(mUri);
-                Log.w(LOGTAG, e);
-                return SingleResponse.getInstance(e);
-            }
-            return SingleResponse.getInstance(file);
+//            final File file = mPreLoader.mDiskCache.get(mUri);
+//            if (file.isFile() && file.length() > 0) return SingleResponse.getInstance(file);
+//            try {
+//                final InputStream is = mPreLoader.mImageDownloader.getStream(mUri, null);
+//                mPreLoader.mDiskCache.save(mUri, is, this);
+//                IoUtils.closeSilently(is);
+//            } catch (IOException e) {
+//                mPreLoader.mDiskCache.remove(mUri);
+//                Log.w(LOGTAG, e);
+//                return SingleResponse.getInstance(e);
+//            }
+            return SingleResponse.getInstance();
         }
 
         @Override

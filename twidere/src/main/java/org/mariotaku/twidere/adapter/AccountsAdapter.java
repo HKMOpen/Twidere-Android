@@ -35,12 +35,11 @@ import org.mariotaku.twidere.app.TwidereApplication;
 import org.mariotaku.twidere.model.ParcelableAccount;
 import org.mariotaku.twidere.model.ParcelableAccount.Indices;
 import org.mariotaku.twidere.provider.TwidereDataStore.Accounts;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.view.holder.AccountViewHolder;
+import org.mariotaku.twidere.view.holder.loader;
 
 public class AccountsAdapter extends SimpleDragSortCursorAdapter implements Constants, IBaseAdapter {
 
-    private final MediaLoaderWrapper mImageLoader;
     private final SharedPreferences mPreferences;
 
     private boolean mDisplayProfileImage;
@@ -52,7 +51,6 @@ public class AccountsAdapter extends SimpleDragSortCursorAdapter implements Cons
         super(context, R.layout.list_item_account, null, new String[]{Accounts.NAME},
                 new int[]{android.R.id.text1}, 0);
         final TwidereApplication application = TwidereApplication.getInstance(context);
-        mImageLoader = application.getMediaLoaderWrapper();
         mPreferences = context.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
     }
 
@@ -69,9 +67,9 @@ public class AccountsAdapter extends SimpleDragSortCursorAdapter implements Cons
         holder.screen_name.setText("@" + cursor.getString(mIndices.screen_name));
         holder.setAccountColor(color);
         if (mDisplayProfileImage) {
-            mImageLoader.displayProfileImage(holder.profile_image, cursor.getString(mIndices.profile_image_url));
+            loader.displayProfileImage(holder.profile_image, cursor.getString(mIndices.profile_image_url));
         } else {
-            mImageLoader.cancelDisplayTask(holder.profile_image);
+            loader.cancelDisplayTask(holder.profile_image);
 //            holder.profile_image.setImageResource(R.drawable.ic_profile_image_default);
         }
         final boolean isMultipleChoice = mChoiceMode == ListView.CHOICE_MODE_MULTIPLE
@@ -87,11 +85,6 @@ public class AccountsAdapter extends SimpleDragSortCursorAdapter implements Cons
         final AccountViewHolder holder = new AccountViewHolder(view);
         view.setTag(holder);
         return view;
-    }
-
-    @Override
-    public MediaLoaderWrapper getImageLoader() {
-        return mImageLoader;
     }
 
     @Override

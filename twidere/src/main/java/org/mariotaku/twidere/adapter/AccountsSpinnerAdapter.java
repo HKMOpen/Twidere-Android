@@ -29,13 +29,12 @@ import org.mariotaku.twidere.R;
 import org.mariotaku.twidere.app.TwidereApplication;
 import org.mariotaku.twidere.fragment.support.MessagesConversationFragment;
 import org.mariotaku.twidere.model.ParcelableCredentials;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
+import org.mariotaku.twidere.view.holder.loader;
 
 import java.util.Collection;
 
 public class AccountsSpinnerAdapter extends ArrayAdapter<ParcelableCredentials> {
 
-    private final MediaLoaderWrapper mImageLoader;
     private final boolean mDisplayProfileImage;
     private final Context mContext;
     private String mDummyItemText;
@@ -47,7 +46,6 @@ public class AccountsSpinnerAdapter extends ArrayAdapter<ParcelableCredentials> 
     public AccountsSpinnerAdapter(final Context context, int itemViewResource) {
         super(context, itemViewResource);
         mContext = context;
-        mImageLoader = TwidereApplication.getInstance(context).getMediaLoaderWrapper();
         mDisplayProfileImage = context.getSharedPreferences(MessagesConversationFragment.SHARED_PREFERENCES_NAME,
                 Context.MODE_PRIVATE).getBoolean(MessagesConversationFragment.KEY_DISPLAY_PROFILE_IMAGE, true);
     }
@@ -92,9 +90,9 @@ public class AccountsSpinnerAdapter extends ArrayAdapter<ParcelableCredentials> 
             if (icon != null) {
                 icon.setVisibility(View.VISIBLE);
                 if (mDisplayProfileImage) {
-                    mImageLoader.displayProfileImage(icon, item.profile_image_url);
+                    loader.displayProfileImage(icon, item.profile_image_url);
                 } else {
-                    mImageLoader.cancelDisplayTask(icon);
+                    loader.cancelDisplayTask(icon);
 //                    icon.setImageResource(R.drawable.ic_profile_image_default);
                 }
             }

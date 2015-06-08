@@ -26,30 +26,29 @@ import android.widget.ImageView;
 import org.mariotaku.twidere.R;
 import org.mariotaku.twidere.adapter.MessageConversationAdapter;
 import org.mariotaku.twidere.model.ParcelableDirectMessage;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
+import org.mariotaku.twidere.view.ProfileImageView;
 
 /**
  * Created by mariotaku on 15/4/25.
  */
 public class IncomingMessageViewHolder extends MessageViewHolder {
 
-    private final ImageView profileImageView;
+    private final ProfileImageView profileImageView;
 
     public IncomingMessageViewHolder(MessageConversationAdapter adapter, View itemView) {
         super(adapter, itemView);
-        profileImageView = (ImageView) itemView.findViewById(R.id.profile_image);
+        profileImageView = (ProfileImageView) itemView.findViewById(R.id.profile_image);
     }
 
     @Override
     public void displayMessage(Cursor cursor, ParcelableDirectMessage.CursorIndices indices) {
         super.displayMessage(cursor, indices);
-        final MediaLoaderWrapper wrapper = adapter.getMediaLoader();
         if (adapter.isProfileImageEnabled()) {
             profileImageView.setVisibility(View.VISIBLE);
-            wrapper.displayProfileImage(profileImageView, cursor.getString(indices.sender_profile_image_url));
+            loader.displayProfileImage(profileImageView, cursor.getString(indices.sender_profile_image_url));
         } else {
             profileImageView.setVisibility(View.GONE);
-            wrapper.cancelDisplayTask(profileImageView);
+            loader.cancelDisplayTask(profileImageView);
         }
     }
 

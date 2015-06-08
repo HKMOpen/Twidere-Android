@@ -35,7 +35,6 @@ import org.mariotaku.twidere.R;
 import org.mariotaku.twidere.adapter.MessageConversationAdapter;
 import org.mariotaku.twidere.model.ParcelableDirectMessage.CursorIndices;
 import org.mariotaku.twidere.model.ParcelableMedia;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.util.StatusActionModeCallback;
 import org.mariotaku.twidere.util.ThemeUtils;
 import org.mariotaku.twidere.util.TwidereColorUtils;
@@ -79,7 +78,6 @@ public class MessageViewHolder extends ViewHolder implements OnMediaClickListene
     public void displayMessage(Cursor cursor, CursorIndices indices) {
         final Context context = adapter.getContext();
         final TwidereLinkify linkify = adapter.getLinkify();
-        final MediaLoaderWrapper loader = adapter.getMediaLoader();
 
         final long accountId = cursor.getLong(indices.account_id);
         final long timestamp = cursor.getLong(indices.message_timestamp);
@@ -88,7 +86,7 @@ public class MessageViewHolder extends ViewHolder implements OnMediaClickListene
         linkify.applyAllLinks(textView, accountId, false);
         time.setText(Utils.formatToLongTimeString(context, timestamp));
         mediaContainer.setVisibility(media != null && media.length > 0 ? View.VISIBLE : View.GONE);
-        mediaContainer.displayMedia(media, loader, accountId, true, this, adapter.getMediaLoadingHandler());
+        mediaContainer.displayMedia(media, accountId, true, this, adapter.getMediaLoadingHandler());
 
         textView.setTextIsSelectable(true);
         textView.setMovementMethod(ArrowKeyMovementMethod.getInstance());

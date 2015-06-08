@@ -31,9 +31,8 @@ import org.mariotaku.twidere.R;
 import org.mariotaku.twidere.adapter.iface.ContentCardClickListener;
 import org.mariotaku.twidere.adapter.iface.IUsersAdapter;
 import org.mariotaku.twidere.model.ParcelableUser;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.util.UserColorNameManager;
-import org.mariotaku.twidere.view.ShapedImageView;
+import org.mariotaku.twidere.view.ProfileImageView;
 import org.mariotaku.twidere.view.iface.IColorLabelView;
 
 import java.util.Locale;
@@ -46,7 +45,7 @@ public class UserViewHolder extends ViewHolder implements OnClickListener, OnLon
     private final IUsersAdapter<?> adapter;
 
     private final IColorLabelView itemContent;
-    private final ImageView profileImageView;
+    private final ProfileImageView profileImageView;
     private final ImageView profileTypeView;
     private final TextView nameView, screenNameView, descriptionView, locationView, urlView,
             statusesCountView, followersCountView, friendsCountView;
@@ -57,7 +56,7 @@ public class UserViewHolder extends ViewHolder implements OnClickListener, OnLon
         super(itemView);
         this.adapter = adapter;
         itemContent = (IColorLabelView) itemView.findViewById(R.id.item_content);
-        profileImageView = (ImageView) itemView.findViewById(R.id.profile_image);
+        profileImageView = (ProfileImageView) itemView.findViewById(R.id.profile_image);
         profileTypeView = (ImageView) itemView.findViewById(R.id.profile_type);
         nameView = (TextView) itemView.findViewById(R.id.name);
         screenNameView = (TextView) itemView.findViewById(R.id.screen_name);
@@ -71,7 +70,6 @@ public class UserViewHolder extends ViewHolder implements OnClickListener, OnLon
 
     public void displayUser(ParcelableUser user) {
 
-        final MediaLoaderWrapper loader = adapter.getMediaLoader();
         final UserColorNameManager manager = adapter.getUserColorNameManager();
 
 

@@ -88,7 +88,6 @@ import android.widget.Toast;
 import com.github.johnpersano.supertoasts.SuperToast;
 import com.github.johnpersano.supertoasts.SuperToast.Duration;
 import com.github.johnpersano.supertoasts.SuperToast.OnDismissListener;
-import com.nostra13.universalimageloader.utils.IoUtils;
 import com.twitter.Extractor;
 
 import org.mariotaku.dynamicgridview.DraggableArrayAdapter;
@@ -117,7 +116,6 @@ import org.mariotaku.twidere.util.EditTextEnterHandler;
 import org.mariotaku.twidere.util.EditTextEnterHandler.EnterListener;
 import org.mariotaku.twidere.util.KeyboardShortcutsHandler;
 import org.mariotaku.twidere.util.MathUtils;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.util.MenuUtils;
 import org.mariotaku.twidere.util.ParseUtils;
 import org.mariotaku.twidere.util.SharedPreferencesWrapper;
@@ -129,8 +127,10 @@ import org.mariotaku.twidere.util.Utils;
 import org.mariotaku.twidere.view.ActionIconView;
 import org.mariotaku.twidere.view.BadgeView;
 import org.mariotaku.twidere.view.ComposeEditText;
+import org.mariotaku.twidere.view.ProfileImageView;
 import org.mariotaku.twidere.view.ShapedImageView;
 import org.mariotaku.twidere.view.StatusTextCountView;
+import org.mariotaku.twidere.view.holder.loader;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -173,10 +173,9 @@ public class ComposeActivity extends ThemedFragmentActivity implements LocationL
     private RecyclerView mAccountSelector;
     private View mAccountSelectorContainer;
     private DraftItem mDraftItem;
-    private ShapedImageView mProfileImageView;
+    private ProfileImageView mProfileImageView;
     private BadgeView mCountView;
     private View mAccountSelectorButton;
-    private MediaLoaderWrapper mImageLoader;
     private View mLocationContainer;
     private ActionIconView mLocationIcon;
     private TextView mLocationText;
@@ -518,7 +517,7 @@ public class ComposeActivity extends ThemedFragmentActivity implements LocationL
         mSendTextCountView = (StatusTextCountView) mSendView.findViewById(R.id.status_text_count);
         mAccountSelector = (RecyclerView) findViewById(R.id.account_selector);
         mAccountSelectorContainer = findViewById(R.id.account_selector_container);
-        mProfileImageView = (ShapedImageView) findViewById(R.id.account_profile_image);
+        mProfileImageView = (ProfileImageView) findViewById(R.id.account_profile_image);
         mCountView = (BadgeView) findViewById(R.id.accounts_count);
         mAccountSelectorButton = findViewById(R.id.account_selector_button);
         mLocationContainer = findViewById(R.id.location_container);
@@ -560,13 +559,13 @@ public class ComposeActivity extends ThemedFragmentActivity implements LocationL
         if (accounts.length == 1) {
             mCountView.setText(null);
             final ParcelableAccount account = accounts[0];
-            mImageLoader.displayProfileImage(mProfileImageView, account.profile_image_url);
-            mProfileImageView.setBorderColor(account.color);
+            loader.displayProfileImage(mProfileImageView, account.profile_image_url);
+//            mProfileImageView.setBorderColor(account.color);
         } else {
             mCountView.setText(String.valueOf(accounts.length));
-            mImageLoader.cancelDisplayTask(mProfileImageView);
-            mProfileImageView.setImageDrawable(null);
-            mProfileImageView.setBorderColors(Utils.getAccountColors(accounts));
+            loader.cancelDisplayTask(mProfileImageView);
+//            mProfileImageView.setImageDrawable(null);
+//            mProfileImageView.setBorderColors(Utils.getAccountColors(accounts));
         }
     }
 
@@ -581,7 +580,6 @@ public class ComposeActivity extends ThemedFragmentActivity implements LocationL
         mTwitterWrapper = app.getTwitterWrapper();
         mResolver = getContentResolver();
         mValidator = new TwidereValidator(this);
-        mImageLoader = app.getMediaLoaderWrapper();
         setContentView(R.layout.activity_compose);
         setFinishOnTouchOutside(false);
         final long[] defaultAccountIds = Utils.getAccountIds(this);
@@ -1279,22 +1277,21 @@ public class ComposeActivity extends ThemedFragmentActivity implements LocationL
     static class AccountIconViewHolder extends ViewHolder implements OnClickListener {
 
         private final AccountIconsAdapter adapter;
-        private final ShapedImageView iconView;
+        private final ProfileImageView iconView;
         private final TextView nameView;
 
         public AccountIconViewHolder(AccountIconsAdapter adapter, View itemView) {
             super(itemView);
             this.adapter = adapter;
-            iconView = (ShapedImageView) itemView.findViewById(android.R.id.icon);
+            iconView = (ProfileImageView) itemView.findViewById(android.R.id.icon);
             nameView = (TextView) itemView.findViewById(android.R.id.text1);
             itemView.setOnClickListener(this);
         }
 
         public void showAccount(AccountIconsAdapter adapter, ParcelableAccount account, boolean isSelected) {
             itemView.setAlpha(isSelected ? 1 : 0.33f);
-            final MediaLoaderWrapper loader = adapter.getImageLoader();
             loader.displayProfileImage(iconView, account.profile_image_url);
-            iconView.setBorderColor(account.color);
+//            iconView.setBorderColor(account.color);
             nameView.setText(adapter.isNameFirst() ? account.name : ("@" + account.screen_name));
         }
 
@@ -1310,7 +1307,6 @@ public class ComposeActivity extends ThemedFragmentActivity implements LocationL
 
         private final ComposeActivity mActivity;
         private final LayoutInflater mInflater;
-        private final MediaLoaderWrapper mImageLoader;
         private final LongSparseArray<Boolean> mSelection;
         private final boolean mNameFirst;
 
@@ -1320,15 +1316,10 @@ public class ComposeActivity extends ThemedFragmentActivity implements LocationL
             setHasStableIds(true);
             mActivity = activity;
             mInflater = activity.getLayoutInflater();
-            mImageLoader = TwidereApplication.getInstance(activity).getMediaLoaderWrapper();
             mSelection = new LongSparseArray<>();
             final SharedPreferencesWrapper preferences = SharedPreferencesWrapper.getInstance(activity,
                     SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE, SharedPreferenceConstants.class);
             mNameFirst = preferences.getBoolean(KEY_NAME_FIRST);
-        }
-
-        public MediaLoaderWrapper getImageLoader() {
-            return mImageLoader;
         }
 
         @NonNull
@@ -1432,7 +1423,7 @@ public class ComposeActivity extends ThemedFragmentActivity implements LocationL
             } catch (IOException e) {
                 return false;
             } finally {
-                IoUtils.closeSilently(os);
+                Utils.closeSilently(os);
             }
             return super.doInBackground(params);
         }
@@ -1584,11 +1575,8 @@ public class ComposeActivity extends ThemedFragmentActivity implements LocationL
 
     private static class MediaPreviewAdapter extends DraggableArrayAdapter<ParcelableMediaUpdate> {
 
-        private final MediaLoaderWrapper mImageLoader;
-
         public MediaPreviewAdapter(final Context context) {
             super(context, R.layout.grid_item_media_editor);
-            mImageLoader = TwidereApplication.getInstance(context).getMediaLoaderWrapper();
         }
 
         public List<ParcelableMediaUpdate> getAsList() {
@@ -1600,7 +1588,7 @@ public class ComposeActivity extends ThemedFragmentActivity implements LocationL
             final View view = super.getView(position, convertView, parent);
             final ParcelableMediaUpdate media = getItem(position);
             final ImageView image = (ImageView) view.findViewById(R.id.image);
-            mImageLoader.displayPreviewImage(media.uri, image);
+            loader.displayPreviewImage(media.uri, image);
             return view;
         }
 

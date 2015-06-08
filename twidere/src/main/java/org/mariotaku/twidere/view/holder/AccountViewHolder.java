@@ -26,10 +26,11 @@ import android.widget.TextView;
 
 import org.mariotaku.twidere.R;
 import org.mariotaku.twidere.view.ColorLabelRelativeLayout;
+import org.mariotaku.twidere.view.ProfileImageView;
 
 public class AccountViewHolder {
 
-    public final ImageView profile_image;
+    public final ProfileImageView profile_image;
     public final TextView name, screen_name;
     public final CheckBox checkbox;
     private final ColorLabelRelativeLayout content;
@@ -39,7 +40,7 @@ public class AccountViewHolder {
         content = (ColorLabelRelativeLayout) view;
         name = (TextView) view.findViewById(android.R.id.text1);
         screen_name = (TextView) view.findViewById(android.R.id.text2);
-        profile_image = (ImageView) view.findViewById(android.R.id.icon);
+        profile_image = (ProfileImageView) view.findViewById(android.R.id.icon);
         checkbox = (CheckBox) view.findViewById(android.R.id.checkbox);
         drag_handle = view.findViewById(R.id.drag_handle);
     }

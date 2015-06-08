@@ -71,7 +71,6 @@ import org.mariotaku.twidere.provider.TwidereDataStore.SearchHistory;
 import org.mariotaku.twidere.util.EditTextEnterHandler;
 import org.mariotaku.twidere.util.EditTextEnterHandler.EnterListener;
 import org.mariotaku.twidere.util.KeyboardShortcutsHandler;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.util.ParseUtils;
 import org.mariotaku.twidere.util.SwipeDismissListViewTouchListener;
 import org.mariotaku.twidere.util.SwipeDismissListViewTouchListener.DismissCallbacks;
@@ -80,6 +79,7 @@ import org.mariotaku.twidere.util.UserColorNameManager;
 import org.mariotaku.twidere.util.Utils;
 import org.mariotaku.twidere.util.content.ContentResolverUtils;
 import org.mariotaku.twidere.view.ExtendedRelativeLayout;
+import org.mariotaku.twidere.view.holder.loader;
 import org.mariotaku.twidere.view.iface.IExtendedView.OnFitSystemWindowsListener;
 
 import java.util.ArrayList;
@@ -415,7 +415,6 @@ public class QuickSearchBarActivity extends ThemedFragmentActivity implements On
 
         private final QuickSearchBarActivity mActivity;
         private final LayoutInflater mInflater;
-        private final MediaLoaderWrapper mImageLoader;
         private final UserColorNameManager mUserColorNameManager;
         private List<SuggestionItem> mData;
 
@@ -423,7 +422,6 @@ public class QuickSearchBarActivity extends ThemedFragmentActivity implements On
             mActivity = activity;
             mInflater = LayoutInflater.from(activity);
             final TwidereApplication application = TwidereApplication.getInstance(activity);
-            mImageLoader = application.getMediaLoaderWrapper();
             mUserColorNameManager = application.getUserColorNameManager();
         }
 
@@ -463,10 +461,6 @@ public class QuickSearchBarActivity extends ThemedFragmentActivity implements On
             }
             item.bindView(this, view, position);
             return view;
-        }
-
-        public MediaLoaderWrapper getImageLoader() {
-            return mImageLoader;
         }
 
         @Override
@@ -629,7 +623,6 @@ public class QuickSearchBarActivity extends ThemedFragmentActivity implements On
 
         @Override
         public void bindView(SuggestionsAdapter adapter, View view, int position) {
-            final MediaLoaderWrapper loader = adapter.getImageLoader();
             final ImageView icon = (ImageView) view.findViewById(android.R.id.icon);
             final TextView text1 = (TextView) view.findViewById(android.R.id.text1);
             final TextView text2 = (TextView) view.findViewById(android.R.id.text2);
@@ -674,7 +667,6 @@ public class QuickSearchBarActivity extends ThemedFragmentActivity implements On
         @Override
         public void bindView(SuggestionsAdapter adapter, View view, int position) {
             final ParcelableUser user = mUser;
-            final MediaLoaderWrapper loader = adapter.getImageLoader();
             final UserColorNameManager manager = adapter.getUserColorNameManager();
             final ImageView icon = (ImageView) view.findViewById(android.R.id.icon);
             final TextView text1 = (TextView) view.findViewById(android.R.id.text1);

@@ -27,8 +27,6 @@ import android.text.TextUtils;
 import android.util.Pair;
 import android.webkit.URLUtil;
 
-import com.nostra13.universalimageloader.core.assist.ContentLengthInputStream;
-import com.nostra13.universalimageloader.core.download.BaseImageDownloader;
 import com.squareup.pollexor.Thumbor;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
@@ -61,7 +59,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class TwidereImageDownloader extends BaseImageDownloader implements Constants {
+public class TwidereImageDownloader implements Constants {
 
     private final Context mContext;
     private final SharedPreferencesWrapper mPreferences;
@@ -72,7 +70,6 @@ public class TwidereImageDownloader extends BaseImageDownloader implements Const
     private final String mTwitterProfileImageSize;
 
     public TwidereImageDownloader(final Context context, final boolean fullImage, final boolean useThumbor) {
-        super(context);
         mContext = context;
         mPreferences = SharedPreferencesWrapper.getInstance(context, SHARED_PREFERENCES_NAME,
                 Context.MODE_PRIVATE, SharedPreferenceConstants.class);
@@ -102,7 +99,6 @@ public class TwidereImageDownloader extends BaseImageDownloader implements Const
         }
     }
 
-    @Override
     protected InputStream getStreamFromNetwork(final String uriString, final Object extras) throws IOException {
         if (uriString == null) return null;
         final ParcelableMedia media = MediaPreviewUtils.getAllAvailableImage(uriString, mFullImage, mClient);
@@ -216,4 +212,16 @@ public class TwidereImageDownloader extends BaseImageDownloader implements Const
         return uri != null && "ton.twitter.com".equalsIgnoreCase(uri.getHost());
     }
 
+    private class ContentLengthInputStream extends InputStream {
+        private final InputStream stream;
+
+        public ContentLengthInputStream(final InputStream stream, final int length) {
+            this.stream = stream;
+        }
+
+        @Override
+        public int read() throws IOException {
+            return stream.read();
+        }
+    }
 }

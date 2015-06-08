@@ -30,9 +30,9 @@ import org.mariotaku.twidere.R;
 import org.mariotaku.twidere.adapter.iface.ContentCardClickListener;
 import org.mariotaku.twidere.adapter.iface.IUserListsAdapter;
 import org.mariotaku.twidere.model.ParcelableUserList;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.util.UserColorNameManager;
 import org.mariotaku.twidere.util.Utils;
+import org.mariotaku.twidere.view.ProfileImageView;
 import org.mariotaku.twidere.view.iface.IColorLabelView;
 
 import java.util.Locale;
@@ -45,7 +45,7 @@ public class UserListViewHolder extends ViewHolder implements View.OnClickListen
     private final IUserListsAdapter<?> adapter;
 
     private final IColorLabelView itemContent;
-    private final ImageView profileImageView;
+    private final ProfileImageView profileImageView;
     private final TextView nameView;
     private final TextView createdByView;
     private final TextView descriptionView;
@@ -58,7 +58,7 @@ public class UserListViewHolder extends ViewHolder implements View.OnClickListen
         super(itemView);
         itemContent = (IColorLabelView) itemView.findViewById(R.id.item_content);
         this.adapter = adapter;
-        profileImageView = (ImageView) itemView.findViewById(R.id.profile_image);
+        profileImageView = (ProfileImageView) itemView.findViewById(R.id.profile_image);
         nameView = (TextView) itemView.findViewById(R.id.name);
         createdByView = (TextView) itemView.findViewById(R.id.created_by);
         descriptionView = (TextView) itemView.findViewById(R.id.description);
@@ -69,7 +69,6 @@ public class UserListViewHolder extends ViewHolder implements View.OnClickListen
     public void displayUserList(ParcelableUserList userList) {
 
         final Context context = adapter.getContext();
-        final MediaLoaderWrapper loader = adapter.getMediaLoader();
         final UserColorNameManager manager = adapter.getUserColorNameManager();
 
         itemContent.drawStart(manager.getUserColor(userList.user_id, false));

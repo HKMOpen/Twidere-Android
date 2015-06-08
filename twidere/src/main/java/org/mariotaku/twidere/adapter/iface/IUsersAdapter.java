@@ -20,7 +20,6 @@
 package org.mariotaku.twidere.adapter.iface;
 
 import org.mariotaku.twidere.model.ParcelableUser;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.view.holder.UserViewHolder.UserClickListener;
 
 /**
@@ -37,8 +36,5 @@ public interface IUsersAdapter<Data> extends IContentCardAdapter, UserClickListe
     void setData(Data data);
 
     boolean shouldShowAccountsColor();
-
-    @Override
-    MediaLoaderWrapper getMediaLoader();
 
 }

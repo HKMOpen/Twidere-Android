@@ -25,7 +25,6 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 
 import org.mariotaku.twidere.adapter.iface.IBaseAdapter;
 import org.mariotaku.twidere.app.TwidereApplication;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.util.OnLinkClickHandler;
 import org.mariotaku.twidere.util.TwidereLinkify;
 import org.mariotaku.twidere.util.Utils;
@@ -42,7 +41,6 @@ public class BaseArrayAdapter<T> extends ArrayAdapter<T> implements IBaseAdapter
     private boolean mDisplayProfileImage, mDisplayNameFirst, mShowAccountColor;
 
     private final SharedPreferences mNicknamePrefs, mColorPrefs;
-    private final MediaLoaderWrapper mImageLoader;
 
     public BaseArrayAdapter(final Context context, final int layoutRes) {
         this(context, layoutRes, null);
@@ -52,16 +50,10 @@ public class BaseArrayAdapter<T> extends ArrayAdapter<T> implements IBaseAdapter
         super(context, layoutRes, collection);
         final TwidereApplication app = TwidereApplication.getInstance(context);
         mLinkify = new TwidereLinkify(new OnLinkClickHandler(context, app.getMultiSelectManager()));
-        mImageLoader = app.getMediaLoaderWrapper();
         mNicknamePrefs = context.getSharedPreferences(USER_NICKNAME_PREFERENCES_NAME, Context.MODE_PRIVATE);
         mColorPrefs = context.getSharedPreferences(USER_COLOR_PREFERENCES_NAME, Context.MODE_PRIVATE);
         mNicknamePrefs.registerOnSharedPreferenceChangeListener(this);
         mColorPrefs.registerOnSharedPreferenceChangeListener(this);
-    }
-
-    @Override
-    public MediaLoaderWrapper getImageLoader() {
-        return mImageLoader;
     }
 
     @Override

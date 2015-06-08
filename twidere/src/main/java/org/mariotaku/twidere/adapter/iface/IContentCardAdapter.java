@@ -23,7 +23,6 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 
 import org.mariotaku.twidere.util.AsyncTwitterWrapper;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.util.UserColorNameManager;
 import org.mariotaku.twidere.view.ShapedImageView.ShapeStyle;
 
@@ -47,5 +46,4 @@ public interface IContentCardAdapter extends ILoadMoreSupportAdapter {
     @NonNull
     AsyncTwitterWrapper getTwitterWrapper();
 
-    MediaLoaderWrapper getMediaLoader();
 }

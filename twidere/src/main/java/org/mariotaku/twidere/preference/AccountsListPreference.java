@@ -23,8 +23,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.TypedArray;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
@@ -35,16 +33,11 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TextView;
 
-import com.nostra13.universalimageloader.core.assist.FailReason;
-import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
-
 import org.mariotaku.twidere.Constants;
 import org.mariotaku.twidere.R;
 import org.mariotaku.twidere.app.TwidereApplication;
 import org.mariotaku.twidere.model.ParcelableAccount;
 import org.mariotaku.twidere.util.AsyncTaskUtils;
-import org.mariotaku.twidere.util.BitmapUtils;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 
 import java.util.List;
 
@@ -92,12 +85,11 @@ public abstract class AccountsListPreference extends PreferenceCategory implemen
 
     protected abstract void setupPreference(AccountItemPreference preference, ParcelableAccount account);
 
-    public static final class AccountItemPreference extends Preference implements ImageLoadingListener,
+    public static final class AccountItemPreference extends Preference implements
             OnSharedPreferenceChangeListener {
 
         private final ParcelableAccount mAccount;
         private final SharedPreferences mSwitchPreference;
-        private final MediaLoaderWrapper mImageLoader;
 
         public AccountItemPreference(final Context context, final ParcelableAccount account, final String switchKey,
                                      final boolean switchDefault) {
@@ -106,30 +98,9 @@ public abstract class AccountsListPreference extends PreferenceCategory implemen
             mAccount = account;
             mSwitchPreference = context.getSharedPreferences(switchPreferenceName, Context.MODE_PRIVATE);
             final TwidereApplication app = TwidereApplication.getInstance(context);
-            mImageLoader = app.getMediaLoaderWrapper();
             mSwitchPreference.registerOnSharedPreferenceChangeListener(this);
         }
 
-        @Override
-        public void onLoadingCancelled(final String imageUri, final View view) {
-//            setIcon(R.drawable.ic_profile_image_default);
-        }
-
-        @Override
-        public void onLoadingComplete(final String imageUri, final View view, final Bitmap loadedImage) {
-            final Bitmap roundedBitmap = BitmapUtils.getCircleBitmap(loadedImage);
-            setIcon(new BitmapDrawable(getContext().getResources(), roundedBitmap));
-        }
-
-        @Override
-        public void onLoadingFailed(final String imageUri, final View view, final FailReason failReason) {
-//            setIcon(R.drawable.ic_profile_image_default);
-        }
-
-        @Override
-        public void onLoadingStarted(final String imageUri, final View view) {
-//            setIcon(R.drawable.ic_profile_image_default);
-        }
 
         @Override
         public void onSharedPreferenceChanged(final SharedPreferences sharedPreferences, final String key) {
@@ -142,7 +113,7 @@ public abstract class AccountsListPreference extends PreferenceCategory implemen
             setTitle(mAccount.name);
             setSummary(String.format("@%s", mAccount.screen_name));
 //            setIcon(R.drawable.ic_profile_image_default);
-            mImageLoader.loadProfileImage(mAccount.profile_image_url, this);
+//            mImageLoader.loadProfileImage(mAccount.profile_image_url, this);
         }
 
         @Override

@@ -127,7 +127,7 @@ public class ThemedLayoutInflaterFactory implements LayoutInflaterFactory {
         }
         if (view instanceof ProfileImageView) {
             final ProfileImageView profileImageView = (ProfileImageView) view;
-            profileImageView.setOval(activity.getCurrentProfileImageStyle() == ShapedImageView.SHAPE_CIRCLE);
+//            profileImageView.setOval(activity.getCurrentProfileImageStyle() == ShapedImageView.SHAPE_CIRCLE);
         }
         if (view instanceof TextView && (!(view instanceof ICustomTypefaceTextView))) {
             final String fontFamily = activity.getCurrentThemeFontFamily();

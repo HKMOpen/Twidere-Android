@@ -74,8 +74,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.commonsware.cwac.merge.MergeAdapter;
-import com.nostra13.universalimageloader.core.assist.FailReason;
-import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 
 import org.mariotaku.querybuilder.Expression;
 import org.mariotaku.twidere.R;
@@ -94,7 +92,6 @@ import org.mariotaku.twidere.util.CompareUtils;
 import org.mariotaku.twidere.util.KeyboardShortcutsHandler;
 import org.mariotaku.twidere.util.KeyboardShortcutsHandler.KeyboardShortcutCallback;
 import org.mariotaku.twidere.util.ListViewUtils;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.util.SharedPreferencesWrapper;
 import org.mariotaku.twidere.util.ThemeUtils;
 import org.mariotaku.twidere.util.TransitionUtils;
@@ -102,6 +99,7 @@ import org.mariotaku.twidere.util.UserColorNameManager;
 import org.mariotaku.twidere.util.Utils;
 import org.mariotaku.twidere.util.content.SupportFragmentReloadCursorObserver;
 import org.mariotaku.twidere.view.ShapedImageView;
+import org.mariotaku.twidere.view.holder.loader;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -112,7 +110,7 @@ import static org.mariotaku.twidere.util.Utils.openUserLists;
 import static org.mariotaku.twidere.util.Utils.openUserProfile;
 
 public class AccountsDashboardFragment extends BaseSupportFragment implements LoaderCallbacks<Cursor>,
-        OnSharedPreferenceChangeListener, ImageLoadingListener, OnClickListener, KeyboardShortcutCallback, AdapterView.OnItemClickListener {
+        OnSharedPreferenceChangeListener, OnClickListener, KeyboardShortcutCallback, AdapterView.OnItemClickListener {
 
     private final SupportFragmentReloadCursorObserver mReloadContentObserver = new SupportFragmentReloadCursorObserver(
             this, 0, this);
@@ -137,7 +135,6 @@ public class AccountsDashboardFragment extends BaseSupportFragment implements Lo
     private View mNoAccountContainer;
 
     private Context mThemedContext;
-    private MediaLoaderWrapper mImageLoader;
     private AccountToggleProvider mAccountActionProvider;
 
     private boolean mSwitchAccountAnimationPlaying;
@@ -340,26 +337,6 @@ public class AccountsDashboardFragment extends BaseSupportFragment implements Lo
     }
 
     @Override
-    public void onLoadingStarted(String imageUri, View view) {
-
-    }
-
-    @Override
-    public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-
-    }
-
-    @Override
-    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-        view.setTag(imageUri);
-    }
-
-    @Override
-    public void onLoadingCancelled(String imageUri, View view) {
-
-    }
-
-    @Override
     public void onSharedPreferenceChanged(final SharedPreferences sharedPreferences, final String key) {
         if (KEY_DEFAULT_ACCOUNT_ID.equals(key)) {
             updateDefaultAccountState();
@@ -384,7 +361,6 @@ public class AccountsDashboardFragment extends BaseSupportFragment implements Lo
         if (view == null) throw new AssertionError();
         final Context context = view.getContext();
         final TwidereApplication application = TwidereApplication.getInstance(context);
-        mImageLoader = application.getMediaLoaderWrapper();
         mListView.setItemsCanFocus(true);
         mAdapter = new MergeAdapter();
         final LayoutInflater inflater = getLayoutInflater(savedInstanceState);
@@ -546,7 +522,7 @@ public class AccountsDashboardFragment extends BaseSupportFragment implements Lo
                 clickedDrawable = clickedImageView.getDrawable();
                 clickedColors = clickedImageView.getBorderColors();
                 final ParcelableAccount oldSelectedAccount = mAccountsAdapter.getSelectedAccount();
-                mImageLoader.displayDashboardProfileImage(clickedImageView,
+                loader.displayDashboardProfileImage(clickedImageView,
                         oldSelectedAccount.profile_image_url, profileDrawable);
 //                mImageLoader.displayDashboardProfileImage(profileImageView,
 //                        account.profile_image_url, clickedDrawable);
@@ -597,7 +573,7 @@ public class AccountsDashboardFragment extends BaseSupportFragment implements Lo
         }
         mAccountProfileNameView.setText(account.name);
         mAccountProfileScreenNameView.setText("@" + account.screen_name);
-        mImageLoader.displayDashboardProfileImage(mAccountProfileImageView,
+        loader.displayDashboardProfileImage(mAccountProfileImageView,
                 account.profile_image_url, profileImageSnapshot);
         mAccountProfileImageView.setBorderColors(account.color);
         final int bannerWidth = mAccountProfileBannerView.getWidth();
@@ -607,9 +583,9 @@ public class AccountsDashboardFragment extends BaseSupportFragment implements Lo
         final String bannerUrl = Utils.getBestBannerUrl(account.profile_banner_url, width);
         final ImageView bannerView = mAccountProfileBannerView;
         if (bannerView.getDrawable() == null || !CompareUtils.objectEquals(bannerUrl, bannerView.getTag())) {
-            mImageLoader.displayProfileBanner(mAccountProfileBannerView, bannerUrl, this);
+            loader.displayProfileBanner(mAccountProfileBannerView, bannerUrl, this);
         } else {
-            mImageLoader.cancelDisplayTask(mAccountProfileBannerView);
+            loader.cancelDisplayTask(mAccountProfileBannerView);
         }
     }
 
@@ -672,14 +648,12 @@ public class AccountsDashboardFragment extends BaseSupportFragment implements Lo
     private static class AccountSelectorAdapter extends Adapter<AccountProfileImageViewHolder> {
 
         private final LayoutInflater mInflater;
-        private final MediaLoaderWrapper mImageLoader;
         private final AccountsDashboardFragment mFragment;
         private final LongSparseArray<Long> positionMap = new LongSparseArray<>();
         private ParcelableAccount[] mInternalAccounts;
 
         AccountSelectorAdapter(Context context, LayoutInflater inflater, AccountsDashboardFragment fragment) {
             mInflater = inflater;
-            mImageLoader = TwidereApplication.getInstance(context).getMediaLoaderWrapper();
             mFragment = fragment;
             setHasStableIds(true);
         }
@@ -722,7 +696,7 @@ public class AccountsDashboardFragment extends BaseSupportFragment implements Lo
 //            holder.itemView.setAlpha(c.getInt(mIndices.is_activated) == 1 ? 1 : 0.5f);
             final ParcelableAccount account = getAdapterAccount(position);
 //            holder.icon.setImageDrawable(null);
-            mImageLoader.displayDashboardProfileImage(holder.icon, account.profile_image_url, null);
+            loader.displayDashboardProfileImage(holder.icon, account.profile_image_url, null);
             holder.icon.setBorderColor(account.color);
         }
 

@@ -23,9 +23,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
 
-import com.nostra13.universalimageloader.cache.disc.DiskCache;
-import com.nostra13.universalimageloader.core.ImageLoader;
-
 import org.mariotaku.twidere.Constants;
 
 import java.io.File;
@@ -41,31 +38,27 @@ public class ImagePreloader implements Constants {
 
     private final Context mContext;
     private final SharedPreferences mPreferences;
-    private final DiskCache mDiskCache;
-    private final ImageLoader mImageLoader;
 
-    public ImagePreloader(final Context context, final ImageLoader loader) {
+    public ImagePreloader(final Context context) {
         mContext = context;
         mPreferences = context.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
-        mImageLoader = loader;
-        mDiskCache = loader.getDiskCache();
     }
 
     public File getCachedImageFile(final String url) {
         if (url == null) return null;
-        final File cache = mDiskCache.get(url);
-        if (ImageValidator.isValid(ImageValidator.checkImageValidity(cache)))
-            return cache;
-        else {
-            preloadImage(url);
-        }
+//        final File cache = mDiskCache.get(url);
+//        if (ImageValidator.isValid(ImageValidator.checkImageValidity(cache)))
+//            return cache;
+//        else {
+//            preloadImage(url);
+//        }
         return null;
     }
 
     public void preloadImage(final String url) {
         if (TextUtils.isEmpty(url)) return;
         if (!isOnWifi(mContext) && mPreferences.getBoolean(KEY_PRELOAD_WIFI_ONLY, true)) return;
-        mImageLoader.loadImage(url, null);
+//        mImageLoader.loadImage(url, null);
     }
 
 }

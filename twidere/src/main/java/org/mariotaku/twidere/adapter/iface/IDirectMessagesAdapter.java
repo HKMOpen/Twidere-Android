@@ -20,7 +20,6 @@
 package org.mariotaku.twidere.adapter.iface;
 
 import org.mariotaku.twidere.model.ParcelableDirectMessage;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.view.ShapedImageView;
 
 public interface IDirectMessagesAdapter {
@@ -34,5 +33,4 @@ public interface IDirectMessagesAdapter {
 
     int getMediaPreviewStyle();
 
-    MediaLoaderWrapper getMediaLoader();
 }

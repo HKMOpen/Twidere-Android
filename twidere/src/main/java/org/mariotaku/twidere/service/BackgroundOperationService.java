@@ -39,7 +39,6 @@ import android.support.v4.app.NotificationCompat.Builder;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.nostra13.universalimageloader.utils.IoUtils;
 import com.twitter.Extractor;
 
 import org.mariotaku.querybuilder.Expression;
@@ -554,7 +553,7 @@ public class BackgroundOperationService extends IntentService implements Constan
                         results.add(response);
                         continue;
                     } finally {
-                        IoUtils.closeSilently(is);
+                        Utils.closeSilently(is);
                     }
                     status.mediaIds(mediaIds);
                 }

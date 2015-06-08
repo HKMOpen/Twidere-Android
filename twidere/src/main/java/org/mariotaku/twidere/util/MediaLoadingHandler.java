@@ -28,9 +28,6 @@ import android.view.ViewParent;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
-import com.nostra13.universalimageloader.core.assist.FailReason;
-import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
-import com.nostra13.universalimageloader.core.listener.ImageLoadingProgressListener;
 
 import org.mariotaku.twidere.R;
 import org.mariotaku.twidere.model.ParcelableMedia;
@@ -39,7 +36,7 @@ import org.mariotaku.twidere.view.ForegroundImageView;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MediaLoadingHandler implements ImageLoadingListener, ImageLoadingProgressListener {
+public class MediaLoadingHandler  {
 
     private final Map<View, String> mLoadingUris = new HashMap<>();
     private final int[] mProgressBarIds;
@@ -56,7 +53,6 @@ public class MediaLoadingHandler implements ImageLoadingListener, ImageLoadingPr
         return mLoadingUris.get(view);
     }
 
-    @Override
     public void onLoadingStarted(final String imageUri, final View view) {
         if (view == null || imageUri == null || imageUri.equals(mLoadingUris.get(view))) return;
         ViewGroup parent = (ViewGroup) view.getParent();
@@ -72,8 +68,7 @@ public class MediaLoadingHandler implements ImageLoadingListener, ImageLoadingPr
         }
     }
 
-    @Override
-    public void onLoadingFailed(final String imageUri, final View view, final FailReason reason) {
+    public void onLoadingFailed(final String imageUri, final View view, final Object reason) {
         if (view == null) return;
         if (view instanceof ForegroundImageView) {
             ((ImageView) view).setImageDrawable(null);
@@ -88,7 +83,6 @@ public class MediaLoadingHandler implements ImageLoadingListener, ImageLoadingPr
         }
     }
 
-    @Override
     public void onLoadingComplete(final String imageUri, final View view, final Bitmap bitmap) {
         if (view == null) return;
         mLoadingUris.remove(view);
@@ -113,7 +107,6 @@ public class MediaLoadingHandler implements ImageLoadingListener, ImageLoadingPr
         }
     }
 
-    @Override
     public void onLoadingCancelled(final String imageUri, final View view) {
         if (view == null || imageUri == null || imageUri.equals(mLoadingUris.get(view))) return;
         mLoadingUris.remove(view);
@@ -126,7 +119,6 @@ public class MediaLoadingHandler implements ImageLoadingListener, ImageLoadingPr
         }
     }
 
-    @Override
     public void onProgressUpdate(final String imageUri, final View view, final int current, final int total) {
         if (total == 0 || view == null) return;
         final ProgressBar progress = findProgressBar(view.getParent());

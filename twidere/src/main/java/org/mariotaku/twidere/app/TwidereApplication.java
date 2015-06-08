@@ -34,13 +34,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.multidex.MultiDexApplication;
 
-import com.nostra13.universalimageloader.cache.disc.DiskCache;
-import com.nostra13.universalimageloader.cache.disc.impl.UnlimitedDiskCache;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
-import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
-import com.nostra13.universalimageloader.core.download.ImageDownloader;
-import com.nostra13.universalimageloader.utils.L;
+import com.facebook.drawee.backends.pipeline.Fresco;
 import com.squareup.okhttp.internal.Network;
 import com.squareup.otto.Bus;
 
@@ -58,7 +52,6 @@ import org.mariotaku.twidere.util.AsyncTwitterWrapper;
 import org.mariotaku.twidere.util.DebugModeUtils;
 import org.mariotaku.twidere.util.ErrorLogger;
 import org.mariotaku.twidere.util.KeyboardShortcutsHandler;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.util.MultiSelectManager;
 import org.mariotaku.twidere.util.ReadStateManager;
 import org.mariotaku.twidere.util.StrictModeUtils;
@@ -68,15 +61,10 @@ import org.mariotaku.twidere.util.Utils;
 import org.mariotaku.twidere.util.VideoLoader;
 import org.mariotaku.twidere.util.content.TwidereSQLiteOpenHelper;
 import org.mariotaku.twidere.util.imageloader.TwidereImageDownloader;
-import org.mariotaku.twidere.util.imageloader.URLFileNameGenerator;
 import org.mariotaku.twidere.util.net.TwidereHostAddressResolver;
-
-import java.io.File;
 
 import edu.tsinghua.spice.SpiceService;
 
-import static org.mariotaku.twidere.util.Utils.getBestCacheDir;
-import static org.mariotaku.twidere.util.Utils.getInternalCacheDir;
 import static org.mariotaku.twidere.util.Utils.initAccountColor;
 import static org.mariotaku.twidere.util.Utils.startRefreshServiceIfNeeded;
 import static org.mariotaku.twidere.util.Utils.startUsageStatisticsServiceIfNeeded;
@@ -95,14 +83,11 @@ public class TwidereApplication extends MultiDexApplication implements Constants
     private static final String KEY_KEYBOARD_SHORTCUT_INITIALIZED = "keyboard_shortcut_initialized";
 
     private Handler mHandler;
-    private MediaLoaderWrapper mMediaLoaderWrapper;
-    private ImageLoader mImageLoader;
     private AsyncTaskManager mAsyncTaskManager;
     private SharedPreferences mPreferences;
     private AsyncTwitterWrapper mTwitterWrapper;
     private MultiSelectManager mMultiSelectManager;
     private TwidereImageDownloader mImageDownloader, mFullImageDownloader;
-    private DiskCache mDiskCache, mFullDiskCache;
     private SQLiteOpenHelper mSQLiteOpenHelper;
     private Network mNetwork;
     private SQLiteDatabase mDatabase;
@@ -128,24 +113,9 @@ public class TwidereApplication extends MultiDexApplication implements Constants
         return mDefaultUserAgent;
     }
 
-    public DiskCache getDiskCache() {
-        if (mDiskCache != null) return mDiskCache;
-        return mDiskCache = createDiskCache(DIR_NAME_IMAGE_CACHE);
-    }
-
-    public DiskCache getFullDiskCache() {
-        if (mFullDiskCache != null) return mFullDiskCache;
-        return mFullDiskCache = createDiskCache(DIR_NAME_FULL_IMAGE_CACHE);
-    }
-
     public UserColorNameManager getUserColorNameManager() {
         if (mUserColorNameManager != null) return mUserColorNameManager;
         return mUserColorNameManager = new UserColorNameManager(this);
-    }
-
-    public ImageDownloader getFullImageDownloader() {
-        if (mFullImageDownloader != null) return mFullImageDownloader;
-        return mFullImageDownloader = new TwidereImageDownloader(this, true, true);
     }
 
     public Handler getHandler() {
@@ -173,35 +143,10 @@ public class TwidereApplication extends MultiDexApplication implements Constants
         return mKeyboardShortcutsHandler;
     }
 
-    public ImageDownloader getImageDownloader() {
-        if (mImageDownloader != null) return mImageDownloader;
-        return mImageDownloader = new TwidereImageDownloader(this, false, true);
-    }
-
-    public ImageLoader getImageLoader() {
-        if (mImageLoader != null) return mImageLoader;
-        final ImageLoader loader = ImageLoader.getInstance();
-        final ImageLoaderConfiguration.Builder cb = new ImageLoaderConfiguration.Builder(this);
-        cb.threadPriority(Thread.NORM_PRIORITY - 2);
-        cb.denyCacheImageMultipleSizesInMemory();
-        cb.tasksProcessingOrder(QueueProcessingType.LIFO);
-        // cb.memoryCache(new ImageMemoryCache(40));
-        cb.diskCache(getDiskCache());
-        cb.imageDownloader(getImageDownloader());
-        L.writeDebugLogs(BuildConfig.DEBUG);
-        loader.init(cb.build());
-        return mImageLoader = loader;
-    }
-
     public VideoLoader getVideoLoader() {
         if (mVideoLoader != null) return mVideoLoader;
         final VideoLoader loader = new VideoLoader(this);
         return mVideoLoader = loader;
-    }
-
-    public MediaLoaderWrapper getMediaLoaderWrapper() {
-        if (mMediaLoaderWrapper != null) return mMediaLoaderWrapper;
-        return mMediaLoaderWrapper = new MediaLoaderWrapper(getImageLoader(), getVideoLoader());
     }
 
     @Nullable
@@ -238,6 +183,7 @@ public class TwidereApplication extends MultiDexApplication implements Constants
         super.onCreate();
         initDebugMode();
         initBugReport();
+        Fresco.initialize(this);
         mDefaultUserAgent = UserAgentUtils.getDefaultUserAgentString(this);
         mHandler = new Handler();
         mMessageBus = new Bus();
@@ -303,9 +249,6 @@ public class TwidereApplication extends MultiDexApplication implements Constants
 
     @Override
     public void onLowMemory() {
-        if (mMediaLoaderWrapper != null) {
-            mMediaLoaderWrapper.clearMemoryCache();
-        }
         super.onLowMemory();
     }
 
@@ -338,16 +281,6 @@ public class TwidereApplication extends MultiDexApplication implements Constants
         if (mFullImageDownloader != null) {
             mFullImageDownloader.reloadConnectivitySettings();
         }
-    }
-
-    private DiskCache createDiskCache(final String dirName) {
-        final File cacheDir = getBestCacheDir(this, dirName);
-        final File fallbackCacheDir = getInternalCacheDir(this, dirName);
-//        final LruDiscCache discCache = new LruDiscCache(cacheDir, new URLFileNameGenerator(), 384 *
-//                1024 * 1024);
-//        discCache.setReserveCacheDir(fallbackCacheDir);
-//        return discCache;
-        return new UnlimitedDiskCache(cacheDir, fallbackCacheDir, new URLFileNameGenerator());
     }
 
     private void initializeAsyncTask() {

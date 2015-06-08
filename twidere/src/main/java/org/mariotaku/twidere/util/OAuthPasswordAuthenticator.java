@@ -23,8 +23,6 @@ import android.text.TextUtils;
 import android.util.Pair;
 import android.util.Xml;
 
-import com.nostra13.universalimageloader.utils.IoUtils;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.mariotaku.restfu.RestAPIFactory;
 import org.mariotaku.restfu.RestClient;
@@ -128,10 +126,10 @@ public class OAuthPasswordAuthenticator implements Constants {
             throw new AuthenticationException(e);
         } finally {
             if (authorizePage != null) {
-                IoUtils.closeSilently(authorizePage);
+                Utils.closeSilently(authorizePage);
             }
             if (authorizeResult != null) {
-                IoUtils.closeSilently(authorizeResult);
+                Utils.closeSilently(authorizeResult);
             }
         }
     }

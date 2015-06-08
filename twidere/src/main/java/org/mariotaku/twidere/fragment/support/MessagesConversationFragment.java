@@ -104,7 +104,6 @@ import org.mariotaku.twidere.util.EditTextEnterHandler.EnterListener;
 import org.mariotaku.twidere.util.KeyboardShortcutsHandler;
 import org.mariotaku.twidere.util.KeyboardShortcutsHandler.KeyboardShortcutCallback;
 import org.mariotaku.twidere.util.KeyboardShortcutsHandler.TakeAllKeyboardShortcut;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.util.MenuUtils;
 import org.mariotaku.twidere.util.ParseUtils;
 import org.mariotaku.twidere.util.ReadStateManager;
@@ -170,7 +169,6 @@ public class MessagesConversationFragment extends BaseSupportFragment implements
     private SharedPreferencesWrapper mPreferences;
     private SharedPreferences mMessageDrafts;
     private ReadStateManager mReadStateManager;
-    private MediaLoaderWrapper mImageLoader;
     private UserColorNameManager mUserColorNameManager;
     private EffectViewHelper mEffectHelper;
 
@@ -239,7 +237,6 @@ public class MessagesConversationFragment extends BaseSupportFragment implements
                 Context.MODE_PRIVATE, SharedPreferenceConstants.class);
         mUserColorNameManager = UserColorNameManager.getInstance(activity);
         mMessageDrafts = getSharedPreferences(MESSAGE_DRAFTS_PREFERENCES_NAME, Context.MODE_PRIVATE);
-        mImageLoader = TwidereApplication.getInstance(activity).getMediaLoaderWrapper();
         mReadStateManager = getReadStateManager();
         mTwitterWrapper = getTwitterWrapper();
         mValidator = new TwidereValidator(activity);

@@ -21,7 +21,6 @@ import android.util.Log;
 import android.webkit.MimeTypeMap;
 
 import com.github.ooxi.jdatauri.DataUri;
-import com.nostra13.universalimageloader.utils.IoUtils;
 
 import org.mariotaku.restfu.annotation.method.GET;
 import org.mariotaku.restfu.http.ContentType;
@@ -35,6 +34,7 @@ import org.mariotaku.twidere.fragment.support.BaseSupportDialogFragment;
 import org.mariotaku.twidere.model.SingleResponse;
 import org.mariotaku.twidere.util.ThemeUtils;
 import org.mariotaku.twidere.util.TwitterAPIFactory;
+import org.mariotaku.twidere.util.Utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -228,13 +228,14 @@ public class ImagePickerActivity extends ThemedFragmentActivity {
                         + MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) : null;
                 final File outFile = File.createTempFile("temp_image_", suffix, cacheDir);
                 os = new FileOutputStream(outFile);
-                IoUtils.copyStream(is, os, null);
+//                Utils.copyStream(is, os, null);
+                Utils.copyStream(is, os);
                 return SingleResponse.getInstance(outFile);
             } catch (final IOException e) {
                 return SingleResponse.getInstance(e);
             } finally {
-                IoUtils.closeSilently(os);
-                IoUtils.closeSilently(is);
+                Utils.closeSilently(os);
+                Utils.closeSilently(is);
             }
         }
 

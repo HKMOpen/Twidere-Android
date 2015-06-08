@@ -95,7 +95,6 @@ import org.mariotaku.twidere.util.CompareUtils;
 import org.mariotaku.twidere.util.KeyboardShortcutsHandler;
 import org.mariotaku.twidere.util.KeyboardShortcutsHandler.KeyboardShortcutCallback;
 import org.mariotaku.twidere.util.LinkCreator;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.util.MediaLoadingHandler;
 import org.mariotaku.twidere.util.RecyclerViewNavigationHelper;
 import org.mariotaku.twidere.util.RecyclerViewUtils;
@@ -113,11 +112,13 @@ import org.mariotaku.twidere.view.CardMediaContainer;
 import org.mariotaku.twidere.view.CardMediaContainer.OnMediaClickListener;
 import org.mariotaku.twidere.view.ColorLabelRelativeLayout;
 import org.mariotaku.twidere.view.ForegroundColorView;
+import org.mariotaku.twidere.view.ProfileImageView;
 import org.mariotaku.twidere.view.StatusTextView;
 import org.mariotaku.twidere.view.TwitterCardContainer;
 import org.mariotaku.twidere.view.holder.GapViewHolder;
 import org.mariotaku.twidere.view.holder.LoadIndicatorViewHolder;
 import org.mariotaku.twidere.view.holder.StatusViewHolder;
+import org.mariotaku.twidere.view.holder.loader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -605,7 +606,7 @@ public class StatusFragment extends BaseSupportFragment implements LoaderCallbac
         private final StatusTextView textView;
         private final TextView quoteTextView;
         private final TextView quotedNameView, quotedScreenNameView;
-        private final ImageView profileImageView;
+        private final ProfileImageView profileImageView;
         private final ImageView profileTypeView;
         private final TextView timeSourceView;
         private final TextView retweetedByView;
@@ -635,7 +636,7 @@ public class StatusFragment extends BaseSupportFragment implements LoaderCallbac
             nameView = (TextView) itemView.findViewById(R.id.name);
             screenNameView = (TextView) itemView.findViewById(R.id.screen_name);
             textView = (StatusTextView) itemView.findViewById(R.id.text);
-            profileImageView = (ImageView) itemView.findViewById(R.id.profile_image);
+            profileImageView = (ProfileImageView) itemView.findViewById(R.id.profile_image);
             profileTypeView = (ImageView) itemView.findViewById(R.id.profile_type);
             timeSourceView = (TextView) itemView.findViewById(R.id.time_source);
             retweetedByView = (TextView) itemView.findViewById(R.id.retweeted_by);
@@ -667,7 +668,6 @@ public class StatusFragment extends BaseSupportFragment implements LoaderCallbac
             if (status == null) return;
             final StatusFragment fragment = adapter.getFragment();
             final Context context = adapter.getContext();
-            final MediaLoaderWrapper loader = adapter.getMediaLoader();
             final UserColorNameManager manager = adapter.getUserColorNameManager();
             final boolean nameFirst = adapter.isNameFirst();
 
@@ -792,7 +792,7 @@ public class StatusFragment extends BaseSupportFragment implements LoaderCallbac
                 mediaPreviewContainer.setVisibility(View.VISIBLE);
                 mediaPreview.setVisibility(View.VISIBLE);
                 mediaPreviewLoad.setVisibility(View.GONE);
-                mediaPreview.displayMedia(status.media, loader, status.account_id,
+                mediaPreview.displayMedia(status.media, status.account_id,
                         adapter.getFragment(), adapter.getMediaLoadingHandler());
             } else {
                 mediaPreviewContainer.setVisibility(View.VISIBLE);
@@ -1068,7 +1068,6 @@ public class StatusFragment extends BaseSupportFragment implements LoaderCallbac
         private final Context mContext;
         private final StatusFragment mFragment;
         private final LayoutInflater mInflater;
-        private final MediaLoaderWrapper mImageLoader;
         private final MediaLoadingHandler mMediaLoadingHandler;
         private final TwidereLinkify mTwidereLinkify;
 
@@ -1108,7 +1107,6 @@ public class StatusFragment extends BaseSupportFragment implements LoaderCallbac
             mFragment = fragment;
             mContext = context;
             mInflater = LayoutInflater.from(context);
-            mImageLoader = TwidereApplication.getInstance(context).getMediaLoaderWrapper();
             mUserColorNameManager = TwidereApplication.getInstance(context).getUserColorNameManager();
             mMediaLoadingHandler = new MediaLoadingHandler(R.id.media_preview_progress);
             mCardBackgroundColor = ThemeUtils.getCardBackgroundColor(context, ThemeUtils.getThemeBackgroundOption(context), ThemeUtils.getUserThemeBackgroundAlpha(context));
@@ -1170,11 +1168,6 @@ public class StatusFragment extends BaseSupportFragment implements LoaderCallbac
         @Override
         public boolean isProfileImageEnabled() {
             return mDisplayProfileImage;
-        }
-
-        @Override
-        public MediaLoaderWrapper getMediaLoader() {
-            return mImageLoader;
         }
 
         public StatusFragment getFragment() {

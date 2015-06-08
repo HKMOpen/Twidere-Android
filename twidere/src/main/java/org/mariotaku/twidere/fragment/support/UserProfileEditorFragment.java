@@ -64,13 +64,13 @@ import org.mariotaku.twidere.util.AsyncTaskUtils;
 import org.mariotaku.twidere.util.AsyncTwitterWrapper.UpdateProfileBannerImageTask;
 import org.mariotaku.twidere.util.AsyncTwitterWrapper.UpdateProfileImageTask;
 import org.mariotaku.twidere.util.KeyboardShortcutsHandler;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.util.ParseUtils;
 import org.mariotaku.twidere.util.TwitterAPIFactory;
 import org.mariotaku.twidere.util.TwitterValidatorMETLengthChecker;
 import org.mariotaku.twidere.util.TwitterWrapper;
 import org.mariotaku.twidere.util.Utils;
 import org.mariotaku.twidere.view.ForegroundColorView;
+import org.mariotaku.twidere.view.holder.loader;
 import org.mariotaku.twidere.view.iface.IExtendedView.OnSizeChangedListener;
 
 import static android.text.TextUtils.isEmpty;
@@ -86,7 +86,6 @@ public class UserProfileEditorFragment extends BaseSupportFragment implements On
     private static final int REQUEST_PICK_LINK_COLOR = 3;
     private static final int REQUEST_PICK_BACKGROUND_COLOR = 4;
 
-    private MediaLoaderWrapper mLazyImageLoader;
     private AsyncTaskManager mAsyncTaskManager;
     private AsyncTask<Object, Object, ?> mTask;
     private ImageView mProfileImageView;
@@ -218,7 +217,6 @@ public class UserProfileEditorFragment extends BaseSupportFragment implements On
         setHasOptionsMenu(true);
         final TwidereApplication application = TwidereApplication.getInstance(getActivity());
         mAsyncTaskManager = application.getAsyncTaskManager();
-        mLazyImageLoader = application.getMediaLoaderWrapper();
         final Bundle args = getArguments();
         final long accountId = args.getLong(EXTRA_ACCOUNT_ID, -1);
         mAccountId = accountId;
@@ -355,9 +353,10 @@ public class UserProfileEditorFragment extends BaseSupportFragment implements On
             mEditDescription.setText(user.description_expanded);
             mEditLocation.setText(user.location);
             mEditUrl.setText(isEmpty(user.url_expanded) ? user.url : user.url_expanded);
-            mLazyImageLoader.displayProfileImage(mProfileImageView, user.profile_image_url);
+            loader.displayProfileImage(mProfileImageView, user.profile_image_url);
             final int def_width = getResources().getDisplayMetrics().widthPixels;
-            mLazyImageLoader.displayProfileBanner(mProfileBannerView, user.profile_banner_url, def_width);
+            final String bannerUrl = Utils.getBestBannerUrl(user.profile_banner_url, def_width);
+            loader.displayProfileBanner(mProfileBannerView, bannerUrl);
             mLinkColor.setColor(user.link_color);
             mBackgroundColor.setColor(user.background_color);
         } else {

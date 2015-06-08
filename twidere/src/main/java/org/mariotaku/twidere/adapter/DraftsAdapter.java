@@ -35,7 +35,6 @@ import org.mariotaku.twidere.model.ParcelableMedia;
 import org.mariotaku.twidere.model.ParcelableMediaUpdate;
 import org.mariotaku.twidere.provider.TwidereDataStore.Drafts;
 import org.mariotaku.twidere.util.MediaLoadingHandler;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.util.SharedPreferencesWrapper;
 import org.mariotaku.twidere.util.TwidereArrayUtils;
 import org.mariotaku.twidere.util.Utils;
@@ -45,7 +44,6 @@ import static org.mariotaku.twidere.util.Utils.getAccountColors;
 
 public class DraftsAdapter extends SimpleCursorAdapter implements Constants {
 
-    private final MediaLoaderWrapper mImageLoader;
     private final MediaLoadingHandler mMediaLoadingHandler;
     private final int mMediaPreviewStyle;
 
@@ -54,7 +52,6 @@ public class DraftsAdapter extends SimpleCursorAdapter implements Constants {
 
     public DraftsAdapter(final Context context) {
         super(context, R.layout.list_item_draft, null, new String[0], new int[0], 0);
-        mImageLoader = TwidereApplication.getInstance(context).getMediaLoaderWrapper();
         mMediaLoadingHandler = new MediaLoadingHandler(R.id.media_preview_progress);
         final SharedPreferencesWrapper preferences = SharedPreferencesWrapper.getInstance(context,
                 SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
@@ -74,7 +71,7 @@ public class DraftsAdapter extends SimpleCursorAdapter implements Constants {
         if (actionType == Drafts.ACTION_UPDATE_STATUS) {
             final ParcelableMedia[] media = ParcelableMedia.fromMediaUpdates(mediaUpdates);
             holder.media_preview_container.setVisibility(View.VISIBLE);
-            holder.media_preview_container.displayMedia(media, mImageLoader, -1L, null, mMediaLoadingHandler);
+            holder.media_preview_container.displayMedia(media, -1L, null, mMediaLoadingHandler);
         } else {
             holder.media_preview_container.setVisibility(View.GONE);
         }

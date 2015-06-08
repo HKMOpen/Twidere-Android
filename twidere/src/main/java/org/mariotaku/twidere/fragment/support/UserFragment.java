@@ -121,7 +121,6 @@ import org.mariotaku.twidere.util.KeyboardShortcutsHandler;
 import org.mariotaku.twidere.util.KeyboardShortcutsHandler.KeyboardShortcutCallback;
 import org.mariotaku.twidere.util.LinkCreator;
 import org.mariotaku.twidere.util.MathUtils;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.util.MenuUtils;
 import org.mariotaku.twidere.util.ParseUtils;
 import org.mariotaku.twidere.util.SharedPreferencesWrapper;
@@ -148,6 +147,7 @@ import org.mariotaku.twidere.view.ShapedImageView;
 import org.mariotaku.twidere.view.TabPagerIndicator;
 import org.mariotaku.twidere.view.TintedStatusFrameLayout;
 import org.mariotaku.twidere.view.TwidereToolbar;
+import org.mariotaku.twidere.view.holder.loader;
 import org.mariotaku.twidere.view.iface.IExtendedView.OnSizeChangedListener;
 
 import java.util.List;
@@ -174,7 +174,6 @@ public class UserFragment extends BaseSupportFragment implements OnClickListener
     private static final String TAB_TYPE_MEDIA = "media";
     private static final String TAB_TYPE_FAVORITES = "favorites";
 
-    private MediaLoaderWrapper mProfileImageLoader;
     private UserColorNameManager mUserColorNameManager;
     private SharedPreferencesWrapper mPreferences;
 
@@ -545,7 +544,7 @@ public class UserFragment extends BaseSupportFragment implements OnClickListener
         mFollowersCount.setText(Utils.getLocalizedNumber(mLocale, user.followers_count));
         mFriendsCount.setText(Utils.getLocalizedNumber(mLocale, user.friends_count));
 
-        mProfileImageLoader.displayProfileImage(mProfileImageView, Utils.getOriginalTwitterProfileImage(user.profile_image_url));
+        loader.displayProfileImage(mProfileImageView, Utils.getOriginalTwitterProfileImage(user.profile_image_url));
         if (userColor != 0) {
             setUiColor(userColor);
         } else {
@@ -553,7 +552,8 @@ public class UserFragment extends BaseSupportFragment implements OnClickListener
         }
         final int defWidth = resources.getDisplayMetrics().widthPixels;
         final int width = mBannerWidth > 0 ? mBannerWidth : defWidth;
-        mProfileImageLoader.displayProfileBanner(mProfileBannerView, user.profile_banner_url, width);
+        final String bannerUrl = Utils.getBestBannerUrl(user.profile_banner_url, width);
+        loader.displayProfileBanner(mProfileBannerView, user.profile_banner_url);
         mUuckyFooter.setVisibility(isUucky(user.id, user.screen_name, user) ? View.VISIBLE : View.GONE);
         final Relationship relationship = mRelationship;
         if (relationship == null || relationship.getTargetUserId() != user.id) {
@@ -703,7 +703,6 @@ public class UserFragment extends BaseSupportFragment implements OnClickListener
                 ThemeUtils.getUserThemeBackgroundAlpha(activity));
         mActionBarShadowColor = 0xA0000000;
         final TwidereApplication app = TwidereApplication.getInstance(activity);
-        mProfileImageLoader = app.getMediaLoaderWrapper();
         final Bundle args = getArguments();
         long accountId = -1, userId = -1;
         String screenName = null;

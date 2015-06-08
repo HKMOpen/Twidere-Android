@@ -36,7 +36,6 @@ import org.mariotaku.twidere.app.TwidereApplication;
 import org.mariotaku.twidere.model.ParcelableDirectMessage;
 import org.mariotaku.twidere.model.ParcelableDirectMessage.CursorIndices;
 import org.mariotaku.twidere.util.DirectMessageOnLinkClickHandler;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.util.MediaLoadingHandler;
 import org.mariotaku.twidere.util.MultiSelectManager;
 import org.mariotaku.twidere.util.SharedPreferencesWrapper;
@@ -62,7 +61,6 @@ public class MessageConversationAdapter extends Adapter<ViewHolder> implements C
 
     private final Context mContext;
     private final LayoutInflater mInflater;
-    private final MediaLoaderWrapper mMediaLoader;
     private final MultiSelectManager mMultiSelectManager;
     private final MediaLoadingHandler mMediaLoadingHandler;
 
@@ -76,7 +74,6 @@ public class MessageConversationAdapter extends Adapter<ViewHolder> implements C
         final TwidereApplication app = TwidereApplication.getInstance(context);
         mLinkify = new TwidereLinkify(new DirectMessageOnLinkClickHandler(context, null));
         mMultiSelectManager = app.getMultiSelectManager();
-        mMediaLoader = app.getMediaLoaderWrapper();
         final SharedPreferencesWrapper preferences = SharedPreferencesWrapper.getInstance(context,
                 SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
         mDisplayProfileImage = preferences.getBoolean(KEY_DISPLAY_PROFILE_IMAGE, true);
@@ -90,11 +87,6 @@ public class MessageConversationAdapter extends Adapter<ViewHolder> implements C
 
     public Context getContext() {
         return mContext;
-    }
-
-    @Override
-    public MediaLoaderWrapper getMediaLoader() {
-        return mMediaLoader;
     }
 
     public MediaLoadingHandler getMediaLoadingHandler() {

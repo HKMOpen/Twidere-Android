@@ -37,7 +37,6 @@ import org.mariotaku.twidere.R;
 import org.mariotaku.twidere.adapter.AbsActivitiesAdapter;
 import org.mariotaku.twidere.model.ParcelableActivity;
 import org.mariotaku.twidere.model.ParcelableUser;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.util.UserColorNameManager;
 import org.mariotaku.twidere.view.ActionIconView;
 import org.oshkimaadziig.george.androidutils.SpanFormatter;
@@ -157,10 +156,9 @@ public class ActivityTitleSummaryViewHolder extends ViewHolder {
     }
 
     private void displayUserProfileImages(final ParcelableUser[] statuses) {
-        final MediaLoaderWrapper imageLoader = adapter.getMediaLoader();
         if (statuses == null) {
             for (final ImageView view : profileImageViews) {
-                imageLoader.cancelDisplayTask(view);
+                loader.cancelDisplayTask(view);
                 view.setVisibility(View.GONE);
             }
             return;
@@ -174,9 +172,9 @@ public class ActivityTitleSummaryViewHolder extends ViewHolder {
             view.setImageDrawable(null);
             if (i < length) {
                 view.setVisibility(View.VISIBLE);
-                imageLoader.displayProfileImage(view, statuses[i].profile_image_url);
+                loader.displayProfileImage(view, statuses[i].profile_image_url);
             } else {
-                imageLoader.cancelDisplayTask(view);
+                loader.cancelDisplayTask(view);
                 view.setVisibility(View.GONE);
             }
         }

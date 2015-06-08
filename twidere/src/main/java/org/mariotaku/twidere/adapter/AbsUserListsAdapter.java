@@ -32,7 +32,6 @@ import org.mariotaku.twidere.R;
 import org.mariotaku.twidere.adapter.iface.IUserListsAdapter;
 import org.mariotaku.twidere.app.TwidereApplication;
 import org.mariotaku.twidere.util.AsyncTwitterWrapper;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.util.SharedPreferencesWrapper;
 import org.mariotaku.twidere.util.ThemeUtils;
 import org.mariotaku.twidere.util.UserColorNameManager;
@@ -47,7 +46,6 @@ public abstract class AbsUserListsAdapter<D> extends LoadMoreSupportAdapter<View
 
     private final Context mContext;
     private final LayoutInflater mInflater;
-    private final MediaLoaderWrapper mMediaLoader;
 
     private final int mCardBackgroundColor;
     private final boolean mCompactCards;
@@ -64,7 +62,6 @@ public abstract class AbsUserListsAdapter<D> extends LoadMoreSupportAdapter<View
         mContext = context;
         mCardBackgroundColor = ThemeUtils.getCardBackgroundColor(context, ThemeUtils.getThemeBackgroundOption(context), ThemeUtils.getUserThemeBackgroundAlpha(context));
         mInflater = LayoutInflater.from(context);
-        mMediaLoader = app.getMediaLoaderWrapper();
         mUserColorNameManager = app.getUserColorNameManager();
         mTwitterWrapper = app.getTwitterWrapper();
         final SharedPreferencesWrapper preferences = SharedPreferencesWrapper.getInstance(context,
@@ -191,11 +188,6 @@ public abstract class AbsUserListsAdapter<D> extends LoadMoreSupportAdapter<View
     @Override
     public boolean shouldShowAccountsColor() {
         return false;
-    }
-
-    @Override
-    public MediaLoaderWrapper getMediaLoader() {
-        return mMediaLoader;
     }
 
     protected abstract void bindUserList(UserListViewHolder holder, int position);

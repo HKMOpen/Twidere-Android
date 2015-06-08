@@ -3816,6 +3816,10 @@ public final class Utils implements Constants {
         return null;
     }
 
+    public static Uri getResourceUri(final int resId) {
+        return Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + resId);
+    }
+
     static class UtilsL {
 
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)

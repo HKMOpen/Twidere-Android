@@ -15,7 +15,6 @@ import org.mariotaku.twidere.app.TwidereApplication;
 import org.mariotaku.twidere.model.ParcelableMedia;
 import org.mariotaku.twidere.model.ParcelableStatus;
 import org.mariotaku.twidere.util.AsyncTwitterWrapper;
-import org.mariotaku.twidere.util.MediaLoaderWrapper;
 import org.mariotaku.twidere.util.MediaLoadingHandler;
 import org.mariotaku.twidere.util.SharedPreferencesWrapper;
 import org.mariotaku.twidere.util.StatusAdapterLinkClickHandler;
@@ -40,7 +39,6 @@ public abstract class AbsStatusesAdapter<D> extends LoadMoreSupportAdapter<ViewH
 
     private final Context mContext;
     private final LayoutInflater mInflater;
-    private final MediaLoaderWrapper mMediaLoader;
     private final MediaLoadingHandler mLoadingHandler;
     private final AsyncTwitterWrapper mTwitterWrapper;
     private final TwidereLinkify mLinkify;
@@ -72,7 +70,6 @@ public abstract class AbsStatusesAdapter<D> extends LoadMoreSupportAdapter<ViewH
         final TwidereApplication app = TwidereApplication.getInstance(context);
         mCardBackgroundColor = ThemeUtils.getCardBackgroundColor(context, ThemeUtils.getThemeBackgroundOption(context), ThemeUtils.getUserThemeBackgroundAlpha(context));
         mInflater = LayoutInflater.from(context);
-        mMediaLoader = app.getMediaLoaderWrapper();
         mUserColorNameManager = app.getUserColorNameManager();
         mLoadingHandler = new MediaLoadingHandler(R.id.media_preview_progress);
         mTwitterWrapper = app.getTwitterWrapper();
@@ -100,11 +97,6 @@ public abstract class AbsStatusesAdapter<D> extends LoadMoreSupportAdapter<ViewH
     @Override
     public boolean shouldShowAccountsColor() {
         return mShowAccountsColor;
-    }
-
-    @Override
-    public final MediaLoaderWrapper getMediaLoader() {
-        return mMediaLoader;
     }
 
     @Override
