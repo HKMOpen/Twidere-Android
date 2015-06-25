@@ -22,44 +22,55 @@ package org.mariotaku.twidere.receiver;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
-import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.util.Log;
 
 import org.mariotaku.twidere.BuildConfig;
 import org.mariotaku.twidere.Constants;
+import org.mariotaku.twidere.util.AsyncTaskUtils;
+import org.mariotaku.twidere.util.Utils;
+import org.mariotaku.twidere.util.net.NetworkUsageUtils;
 
+import edu.tsinghua.spice.Task.SpiceAsyUploadTask;
 import edu.tsinghua.spice.Utilies.NetworkStateUtil;
 import edu.tsinghua.spice.Utilies.SpiceProfilingUtil;
 
 import static org.mariotaku.twidere.util.Utils.startRefreshServiceIfNeeded;
-import static org.mariotaku.twidere.util.Utils.startUsageStatisticsServiceIfNeeded;
 
 public class ConnectivityStateReceiver extends BroadcastReceiver implements Constants {
 
-	private static final String RECEIVER_LOGTAG = LOGTAG + "." + "Connectivity";
-    private LocationManager mLocationManager;
+    private static final String RECEIVER_LOGTAG = LOGTAG + "." + "Connectivity";
 
-	@Override
-	public void onReceive(final Context context, final Intent intent) {
+    @Override
+    public void onReceive(final Context context, final Intent intent) {
         if (BuildConfig.DEBUG) {
-			Log.d(RECEIVER_LOGTAG, String.format("Received Broadcast %s", intent));
-		}
-		if (!ConnectivityManager.CONNECTIVITY_ACTION.equals(intent.getAction())) return;
-		startUsageStatisticsServiceIfNeeded(context);
-		startRefreshServiceIfNeeded(context);
-        //spice
-        SpiceProfilingUtil.profile(context,SpiceProfilingUtil.FILE_NAME_ONWIFI, NetworkStateUtil.getConnectedType(context));
-        mLocationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        if (mLocationManager == null) return;
-        final String provider = LocationManager.NETWORK_PROVIDER;
-        if (mLocationManager.isProviderEnabled(provider)) {
-            final Location location = mLocationManager.getLastKnownLocation(provider);
+            Log.d(RECEIVER_LOGTAG, String.format("Received Broadcast %s", intent));
+        }
+        if (!ConnectivityManager.CONNECTIVITY_ACTION.equals(intent.getAction())) return;
+        startRefreshServiceIfNeeded(context);
+        final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_NAME,
+                Context.MODE_PRIVATE);
+        if (prefs.getBoolean(KEY_USAGE_STATISTICS, false) && prefs.getBoolean(KEY_SETTINGS_WIZARD_COMPLETED, false)) {
+            //spice
+            SpiceProfilingUtil.profile(context, SpiceProfilingUtil.FILE_NAME_ONWIFI, NetworkStateUtil.getConnectedType(context));
+            final Location location = Utils.getCachedLocation(context);
             if (location != null) {
                 SpiceProfilingUtil.profile(context, SpiceProfilingUtil.FILE_NAME_LOCATION, location.getTime() + ","
                         + location.getLatitude() + "," + location.getLongitude() + "," + location.getProvider());
             }
         }
-	}
+        final int networkType = Utils.getActiveNetworkType(context.getApplicationContext());
+        NetworkUsageUtils.setNetworkType(networkType);
+        final boolean isWifi = networkType == ConnectivityManager.TYPE_WIFI;
+        final boolean isCharging = SpiceProfilingUtil.isCharging(context.getApplicationContext());
+        if (isWifi && isCharging) {
+            final long currentTime = System.currentTimeMillis();
+            final long lastSuccessfulTime = SpiceAsyUploadTask.getLastUploadTime(context);
+            if ((currentTime - lastSuccessfulTime) > SpiceAsyUploadTask.UPLOAD_INTERVAL_MILLIS) {
+                AsyncTaskUtils.executeTask(new SpiceAsyUploadTask(context));
+            }
+        }
+    }
 }

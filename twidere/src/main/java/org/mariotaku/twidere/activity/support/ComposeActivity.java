@@ -47,6 +47,8 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationCompat.Action;
 import android.support.v4.util.LongSparseArray;
@@ -97,6 +99,7 @@ import org.mariotaku.twidere.app.TwidereApplication;
 import org.mariotaku.twidere.constant.SharedPreferenceConstants;
 import org.mariotaku.twidere.fragment.support.BaseSupportDialogFragment;
 import org.mariotaku.twidere.fragment.support.DraftsFragment;
+import org.mariotaku.twidere.fragment.support.SupportProgressDialogFragment;
 import org.mariotaku.twidere.fragment.support.ViewStatusDialogFragment;
 import org.mariotaku.twidere.model.DraftItem;
 import org.mariotaku.twidere.model.ParcelableAccount;
@@ -153,6 +156,7 @@ public class ComposeActivity extends ThemedFragmentActivity implements LocationL
     private static final String EXTRA_SHOULD_SAVE_ACCOUNTS = "should_save_accounts";
     private static final String EXTRA_ORIGINAL_TEXT = "original_text";
     private static final String EXTRA_SHARE_SCREENSHOT = "share_screenshot";
+    private static final String DISCARD_STATUS_DIALOG_FRAGMENT_TAG = "discard_status";
 
     // Utility classes
     private final Extractor mExtractor = new Extractor();
@@ -736,9 +740,8 @@ public class ComposeActivity extends ThemedFragmentActivity implements LocationL
                 if (s instanceof Spannable && count == 1 && before == 0) {
                     final ImageSpan[] imageSpans = ((Spannable) s).getSpans(start, start + count, ImageSpan.class);
                     if (imageSpans.length == 1) {
-                        final Intent intent = new Intent(ComposeActivity.this, ImagePickerActivity.class);
-                        intent.setAction(ImagePickerActivity.INTENT_ACTION_GET_IMAGE);
-                        intent.setData(Uri.parse(imageSpans[0].getSource()));
+                        final Intent intent = ThemedImagePickerActivity.withThemed(ComposeActivity.this)
+                                .getImage(Uri.parse(imageSpans[0].getSource())).build();
                         startActivityForResult(intent, REQUEST_PICK_IMAGE);
                         ((Spannable) s).setSpan(new MarkForDeleteSpan(), start, start + count,
                                 Spanned.SPAN_INCLUSIVE_INCLUSIVE);
@@ -1050,8 +1053,7 @@ public class ComposeActivity extends ThemedFragmentActivity implements LocationL
     }
 
     private boolean pickImage() {
-        final Intent intent = new Intent(this, ImagePickerActivity.class);
-        intent.setAction(ImagePickerActivity.INTENT_ACTION_PICK_IMAGE);
+        final Intent intent = ThemedImagePickerActivity.withThemed(this).pickImage().build();
         startActivityForResult(intent, REQUEST_PICK_IMAGE);
         return true;
     }
@@ -1127,6 +1129,15 @@ public class ComposeActivity extends ThemedFragmentActivity implements LocationL
     }
 
     private void setProgressVisible(final boolean visible) {
+        final FragmentManager fm = getSupportFragmentManager();
+        final Fragment f = fm.findFragmentByTag(DISCARD_STATUS_DIALOG_FRAGMENT_TAG);
+        if (!visible && f instanceof DialogFragment) {
+            ((DialogFragment) f).dismiss();
+        } else if (visible) {
+            SupportProgressDialogFragment df = new SupportProgressDialogFragment();
+            df.show(fm, DISCARD_STATUS_DIALOG_FRAGMENT_TAG);
+            df.setCancelable(false);
+        }
 //        mProgress.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
@@ -1146,35 +1157,38 @@ public class ComposeActivity extends ThemedFragmentActivity implements LocationL
      */
     private boolean startLocationUpdateIfEnabled() {
         final LocationManager lm = mLocationManager;
-        final boolean attachLocation = mPreferences.getBoolean(KEY_ATTACH_LOCATION);
-        if (!attachLocation) {
-            lm.removeUpdates(this);
+        try {
+            final boolean attachLocation = mPreferences.getBoolean(KEY_ATTACH_LOCATION);
+            if (!attachLocation) {
+                lm.removeUpdates(this);
+                return false;
+            }
+            final Criteria criteria = new Criteria();
+            criteria.setAccuracy(Criteria.ACCURACY_FINE);
+            final String provider = lm.getBestProvider(criteria, true);
+            if (provider != null) {
+                mLocationText.setText(R.string.getting_location);
+                lm.requestLocationUpdates(provider, 0, 0, this);
+                final Location location;
+                if (lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                    location = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                } else {
+                    location = lm.getLastKnownLocation(provider);
+                }
+                if (location != null) {
+                    onLocationChanged(location);
+                }
+            } else {
+                Toast.makeText(this, R.string.cannot_get_location, Toast.LENGTH_SHORT).show();
+            }
+            return provider != null;
+        } catch (SecurityException e) {
             return false;
         }
-        final Criteria criteria = new Criteria();
-        criteria.setAccuracy(Criteria.ACCURACY_FINE);
-        final String provider = lm.getBestProvider(criteria, true);
-        if (provider != null) {
-            mLocationText.setText(R.string.getting_location);
-            lm.requestLocationUpdates(provider, 0, 0, this);
-            final Location location;
-            if (lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-                location = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            } else {
-                location = lm.getLastKnownLocation(provider);
-            }
-            if (location != null) {
-                onLocationChanged(location);
-            }
-        } else {
-            Toast.makeText(this, R.string.cannot_get_location, Toast.LENGTH_SHORT).show();
-        }
-        return provider != null;
     }
 
     private boolean takePhoto() {
-        final Intent intent = new Intent(this, ImagePickerActivity.class);
-        intent.setAction(ImagePickerActivity.INTENT_ACTION_TAKE_PHOTO);
+        final Intent intent = ThemedImagePickerActivity.withThemed(this).takePhoto().build();
         startActivityForResult(intent, REQUEST_TAKE_PHOTO);
         return true;
     }

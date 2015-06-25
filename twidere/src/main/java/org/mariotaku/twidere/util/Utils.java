@@ -48,6 +48,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
 import android.graphics.drawable.TransitionDrawable;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -82,12 +84,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.ShareActionProvider;
 import android.text.Editable;
 import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
 import android.text.format.Time;
 import android.text.style.CharacterStyle;
 import android.text.style.StyleSpan;
+import android.text.style.URLSpan;
 import android.transition.Transition;
 import android.transition.TransitionInflater;
 import android.util.Log;
@@ -210,6 +214,7 @@ import org.mariotaku.twidere.provider.TwidereDataStore.Drafts;
 import org.mariotaku.twidere.provider.TwidereDataStore.Filters;
 import org.mariotaku.twidere.provider.TwidereDataStore.Filters.Users;
 import org.mariotaku.twidere.provider.TwidereDataStore.Mentions;
+import org.mariotaku.twidere.provider.TwidereDataStore.NetworkUsages;
 import org.mariotaku.twidere.provider.TwidereDataStore.Notifications;
 import org.mariotaku.twidere.provider.TwidereDataStore.Permissions;
 import org.mariotaku.twidere.provider.TwidereDataStore.Preferences;
@@ -219,6 +224,7 @@ import org.mariotaku.twidere.provider.TwidereDataStore.Statuses;
 import org.mariotaku.twidere.provider.TwidereDataStore.Tabs;
 import org.mariotaku.twidere.provider.TwidereDataStore.UnreadCounts;
 import org.mariotaku.twidere.service.RefreshService;
+import org.mariotaku.twidere.text.OriginalStatusSpan;
 import org.mariotaku.twidere.util.TwidereLinkify.HighlightStyle;
 import org.mariotaku.twidere.util.content.ContentResolverUtils;
 import org.mariotaku.twidere.util.menu.TwidereMenuInfo;
@@ -250,8 +256,6 @@ import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 
 import javax.net.ssl.SSLException;
-
-import edu.tsinghua.spice.SpiceService;
 
 import static android.text.TextUtils.isEmpty;
 import static android.text.format.DateUtils.getRelativeTimeSpanString;
@@ -316,6 +320,8 @@ public final class Utils implements Constants {
                 TABLE_ID_SAVED_SEARCHES);
         CONTENT_PROVIDER_URI_MATCHER.addURI(TwidereDataStore.AUTHORITY, SearchHistory.CONTENT_PATH,
                 TABLE_ID_SEARCH_HISTORY);
+        CONTENT_PROVIDER_URI_MATCHER.addURI(TwidereDataStore.AUTHORITY, NetworkUsages.CONTENT_PATH,
+                TABLE_ID_NETWORK_USAGES);
 
         CONTENT_PROVIDER_URI_MATCHER.addURI(TwidereDataStore.AUTHORITY, Notifications.CONTENT_PATH,
                 VIRTUAL_TABLE_ID_NOTIFICATIONS);
@@ -2181,6 +2187,8 @@ public final class Utils implements Constants {
                 return SavedSearches.TABLE_NAME;
             case TABLE_ID_SEARCH_HISTORY:
                 return SearchHistory.TABLE_NAME;
+            case TABLE_ID_NETWORK_USAGES:
+                return NetworkUsages.TABLE_NAME;
             default:
                 return null;
         }
@@ -2513,6 +2521,13 @@ public final class Utils implements Constants {
         final NetworkInfo networkInfo = conn.getActiveNetworkInfo();
         return networkInfo != null && networkInfo.getType() == ConnectivityManager.TYPE_WIFI
                 && networkInfo.isConnected();
+    }
+
+    public static int getActiveNetworkType(final Context context) {
+        if (context == null) return -1;
+        final ConnectivityManager conn = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        final NetworkInfo networkInfo = conn.getActiveNetworkInfo();
+        return networkInfo != null && networkInfo.isConnected() ? networkInfo.getType() : -1;
     }
 
     public static boolean isRedirected(final int code) {
@@ -3415,19 +3430,6 @@ public final class Utils implements Constants {
         showWarnMessage(context, context.getText(resId), long_message);
     }
 
-    public static void startUsageStatisticsServiceIfNeeded(final Context context) {
-        final SharedPreferences prefs = context.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
-        //spice
-        final Intent spiceProfilingServiceIntent = new Intent(context, SpiceService.class);
-        if (prefs.getBoolean(KEY_USAGE_STATISTICS, false)) {
-            //spice
-            context.startService(spiceProfilingServiceIntent);
-        } else {
-            //spice
-            context.stopService(spiceProfilingServiceIntent);
-        }
-    }
-
     public static void startRefreshServiceIfNeeded(final Context context) {
         final Intent refreshServiceIntent = new Intent(context, RefreshService.class);
         AsyncTask.execute(new Runnable() {
@@ -3816,6 +3818,27 @@ public final class Utils implements Constants {
         return null;
     }
 
+    public static void applyOriginalTweetSpan(final TextView textView, final ParcelableStatus status) {
+        if (!status.is_quote) return;
+        final SpannableStringBuilder text = SpannableStringBuilder.valueOf(textView.getText());
+        final URLSpan[] spans = text.getSpans(0, text.length(), URLSpan.class);
+        URLSpan found = null;
+        String findPattern = "twitter.com/" + status.quoted_by_user_screen_name + "/status/" + status.quote_id;
+        for (URLSpan span : spans) {
+            if (span.getURL().contains(findPattern)) {
+                found = span;
+                break;
+            }
+        }
+        if (found == null) return;
+        int start = text.getSpanStart(found), end = text.getSpanEnd(found);
+        text.replace(start, end, textView.getResources().getString(R.string.original_status));
+        start = text.getSpanStart(found);
+        end = text.getSpanEnd(found);
+        text.setSpan(new OriginalStatusSpan(textView.getContext()), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        textView.setText(text);
+    }
+
     static class UtilsL {
 
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -3875,6 +3898,26 @@ public final class Utils implements Constants {
 
             context.getApplicationContext().sendBroadcast(intent);
         }
+    }
+
+    public static Location getCachedLocation(Context context) {
+        Location location = null;
+        try {
+            final LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+            try {
+                location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            } catch (Exception ignore) {
+
+            }
+            if (location != null) return location;
+            try {
+                location = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            } catch (Exception ignore) {
+
+            }
+        } catch (Exception ignore) {
+        }
+        return location;
     }
 
 }

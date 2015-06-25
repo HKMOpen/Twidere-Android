@@ -23,6 +23,7 @@ import org.mariotaku.restfu.annotation.method.GET;
 import org.mariotaku.restfu.annotation.method.POST;
 import org.mariotaku.restfu.annotation.param.Body;
 import org.mariotaku.restfu.annotation.param.Form;
+import org.mariotaku.restfu.annotation.param.MethodExtra;
 import org.mariotaku.restfu.annotation.param.Part;
 import org.mariotaku.restfu.annotation.param.Query;
 import org.mariotaku.restfu.http.BodyType;
@@ -34,11 +35,13 @@ import org.mariotaku.twidere.api.twitter.model.IDs;
 import org.mariotaku.twidere.api.twitter.model.PageableResponseList;
 import org.mariotaku.twidere.api.twitter.model.Paging;
 import org.mariotaku.twidere.api.twitter.model.ProfileUpdate;
+import org.mariotaku.twidere.api.twitter.model.ResponseCode;
 import org.mariotaku.twidere.api.twitter.model.ResponseList;
 import org.mariotaku.twidere.api.twitter.model.SettingsUpdate;
 import org.mariotaku.twidere.api.twitter.model.User;
 
 @SuppressWarnings("RedundantThrows")
+@MethodExtra(name = "extra_params", values = {"include_entities"})
 public interface UsersResources {
 
     @POST("/blocks/create.json")
@@ -103,7 +106,7 @@ public interface UsersResources {
 
     @POST("/account/remove_profile_banner.json")
     @Body(BodyType.FORM)
-    void removeProfileBannerImage() throws TwitterException;
+    ResponseCode removeProfileBannerImage() throws TwitterException;
 
     @GET("/users/search.json")
     ResponseList<User> searchUsers(@Query("q") String query, @Query Paging paging) throws TwitterException;
@@ -132,14 +135,14 @@ public interface UsersResources {
 
     @POST("/account/update_profile_banner.json")
     @Body(BodyType.MULTIPART)
-    void updateProfileBannerImage(@Part("image") FileTypedData data, @Part("width") int width,
-                                  @Part("height") int height, @Part("offset_left") int offsetLeft,
-                                  @Part("offset_top") int offsetTop)
+    ResponseCode updateProfileBannerImage(@Part("banner") FileTypedData data, @Part("width") int width,
+                                          @Part("height") int height, @Part("offset_left") int offsetLeft,
+                                          @Part("offset_top") int offsetTop)
             throws TwitterException;
 
     @POST("/account/update_profile_banner.json")
     @Body(BodyType.MULTIPART)
-    void updateProfileBannerImage(@Part("image") FileTypedData data) throws TwitterException;
+    ResponseCode updateProfileBannerImage(@Part("banner") FileTypedData data) throws TwitterException;
 
     @POST("/account/update_profile_image.json")
     @Body(BodyType.MULTIPART)

@@ -19,11 +19,14 @@
 
 package org.mariotaku.twidere.util.net;
 
+import android.content.Context;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Pair;
 
 import com.squareup.okhttp.Call;
+import com.squareup.okhttp.Callback;
 import com.squareup.okhttp.Headers;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
@@ -34,9 +37,11 @@ import com.squareup.okhttp.ResponseBody;
 
 import org.mariotaku.restfu.Utils;
 import org.mariotaku.restfu.http.ContentType;
+import org.mariotaku.restfu.http.RestHttpCallback;
 import org.mariotaku.restfu.http.RestHttpClient;
 import org.mariotaku.restfu.http.RestHttpRequest;
 import org.mariotaku.restfu.http.RestHttpResponse;
+import org.mariotaku.restfu.http.RestQueuedRequest;
 import org.mariotaku.restfu.http.mime.TypedData;
 import org.mariotaku.twidere.util.DebugModeUtils;
 
@@ -55,18 +60,20 @@ public class OkHttpRestClient implements RestHttpClient {
 
     private final OkHttpClient client;
 
-    public OkHttpRestClient() {
-        this(new OkHttpClient());
-    }
-
-    public OkHttpRestClient(OkHttpClient client) {
+    public OkHttpRestClient(Context context, OkHttpClient client) {
         this.client = client;
+        NetworkUsageUtils.initForHttpClient(context, client);
         DebugModeUtils.initForHttpClient(client);
     }
 
     @NonNull
     @Override
     public RestHttpResponse execute(RestHttpRequest restHttpRequest) throws IOException {
+        final Call call = newCall(restHttpRequest);
+        return new OkRestHttpResponse(call.execute());
+    }
+
+    private Call newCall(final RestHttpRequest restHttpRequest) {
         final Request.Builder builder = new Request.Builder();
         builder.method(restHttpRequest.getMethod(), RestToOkBody.wrap(restHttpRequest.getBody()));
         builder.url(restHttpRequest.getUrl());
@@ -76,8 +83,33 @@ public class OkHttpRestClient implements RestHttpClient {
                 builder.addHeader(header.first, header.second);
             }
         }
-        final Call call = client.newCall(builder.build());
-        return new OkRestHttpResponse(call.execute());
+        builder.tag(restHttpRequest.getExtra());
+        return client.newCall(builder.build());
+    }
+
+    @Override
+    public RestQueuedRequest enqueue(final RestHttpRequest request, final RestHttpCallback callback) {
+        final Call call = newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(final Request request, final IOException e) {
+                if (call.isCanceled()) {
+                    callback.cancelled();
+                    return;
+                }
+                callback.exception(e);
+            }
+
+            @Override
+            public void onResponse(final Response response) throws IOException {
+                if (call.isCanceled()) {
+                    callback.cancelled();
+                    return;
+                }
+                callback.callback(new OkRestHttpResponse(response));
+            }
+        });
+        return new OkHttpQueuedRequest(client, call);
     }
 
     private static class RestToOkBody extends RequestBody {
@@ -97,6 +129,11 @@ public class OkHttpRestClient implements RestHttpClient {
         @Override
         public void writeTo(BufferedSink sink) throws IOException {
             body.writeTo(sink.outputStream());
+        }
+
+        @Override
+        public long contentLength() throws IOException {
+            return body.length();
         }
 
         @Nullable
@@ -194,6 +231,37 @@ public class OkHttpRestClient implements RestHttpClient {
         @Override
         public void close() throws IOException {
             body.close();
+        }
+    }
+
+    private static class OkHttpQueuedRequest implements RestQueuedRequest {
+        private final OkHttpClient client;
+        private final Call call;
+        private boolean cancelled;
+
+        public OkHttpQueuedRequest(final OkHttpClient client, final Call call) {
+            this.client = client;
+            this.call = call;
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return cancelled || call.isCanceled();
+        }
+
+        @Override
+        public void cancel() {
+            cancelled = true;
+            if (Looper.myLooper() != Looper.getMainLooper()) {
+                call.cancel();
+            } else {
+                client.getDispatcher().getExecutorService().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        call.cancel();
+                    }
+                });
+            }
         }
     }
 }

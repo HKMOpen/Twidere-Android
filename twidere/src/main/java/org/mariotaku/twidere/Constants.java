@@ -33,7 +33,7 @@ import static org.mariotaku.twidere.annotation.Preference.Type.STRING;
 public interface Constants extends TwidereConstants {
 
     String DATABASES_NAME = "twidere.sqlite";
-    int DATABASES_VERSION = 99;
+    int DATABASES_VERSION = 104;
 
     int MENU_GROUP_STATUS_EXTENSION = 10;
     int MENU_GROUP_COMPOSE_EXTENSION = 11;
@@ -162,8 +162,6 @@ public interface Constants extends TwidereConstants {
 
     long HONDAJOJO_ID = 514378421;
     String HONDAJOJO_SCREEN_NAME = "HondaJOJO";
-    int UUCKY_ID = 1062473329;
-    String UUCKY_SCREEN_NAME = "Uucky_Lee";
     String EASTER_EGG_TRIGGER_TEXT = "\u718A\u5B69\u5B50";
     String EASTER_EGG_RESTORE_TEXT_PART1 = "\u5927\u738B";
     String EASTER_EGG_RESTORE_TEXT_PART2 = "\u5C0F\u7684";

@@ -60,6 +60,7 @@ public interface TwidereConstants extends SharedPreferenceConstants, IntentConst
     String SCHEME_CONTENT = "content";
     String SCHEME_TWIDERE = "twidere";
     String SCHEME_DATA = "data";
+    String SCHEME_FILE = "file";
 
     String PROTOCOL_HTTP = SCHEME_HTTP + "://";
     String PROTOCOL_HTTPS = SCHEME_HTTPS + "://";
@@ -180,6 +181,7 @@ public interface TwidereConstants extends SharedPreferenceConstants, IntentConst
     int TABLE_ID_CACHED_STATUSES = 62;
     int TABLE_ID_CACHED_HASHTAGS = 63;
     int TABLE_ID_CACHED_RELATIONSHIPS = 64;
+    int TABLE_ID_NETWORK_USAGES = 71;
     int VIRTUAL_TABLE_ID_DATABASE_READY = 100;
     int VIRTUAL_TABLE_ID_NOTIFICATIONS = 101;
     int VIRTUAL_TABLE_ID_PREFERENCES = 102;

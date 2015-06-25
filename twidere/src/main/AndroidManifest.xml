@@ -316,7 +316,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activity.support.ImagePickerActivity"
+            android:name=".activity.support.ThemedImagePickerActivity"
             android:exported="false"
             android:theme="@style/Theme.Twidere.Light.NoDisplay"
             android:windowSoftInputMode="adjustResize">
@@ -357,15 +357,6 @@
             android:theme="@style/Theme.Twidere.Dark.Dialog">
             <intent-filter>
                 <action android:name="org.mariotaku.twidere.REQUEST_PERMISSIONS"/>
-
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".activity.CameraCropActivity"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="org.mariotaku.twidere.CAMERA_CROP"/>
 
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
@@ -480,6 +471,11 @@
             android:name=".activity.UsageStatisticsActivity"
             android:label="@string/usage_statistics"
             android:theme="@android:style/Theme.NoDisplay"/>
+        <activity
+            android:name=".activity.ImageCropperActivity"
+            android:label="@string/crop_image"
+            android:theme="@style/Theme.Twidere.Dark.NoActionBar"
+            android:windowSoftInputMode="adjustResize"/>
 
         <service
             android:name=".service.RefreshService"
@@ -559,23 +555,6 @@
                     android:scheme="android_secret_code"/>
             </intent-filter>
         </receiver>
-
-        <!-- Begin third Party components -->
-
-        <!-- SPICE -->
-        <service android:name="edu.tsinghua.spice.SpiceService"/>
-        <receiver
-            android:name="edu.tsinghua.spice.SpiceUploadReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.net.wifi.supplicant.CONNECTION_CHANGE"/>
-                <action android:name="android.intent.action.ACTION_POWER_CONNECTED"/>
-                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED"/>
-                <action android:name="edu.tsinghua.spice.UPLOAD_PROFILE"/>
-            </intent-filter>
-        </receiver>
-
-        <!-- Begin third Party components -->
 
     </application>
 

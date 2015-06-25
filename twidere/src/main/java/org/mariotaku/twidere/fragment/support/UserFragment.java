@@ -45,7 +45,6 @@ import android.nfc.NfcAdapter.CreateNdefMessageCallback;
 import android.nfc.NfcEvent;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -181,6 +180,7 @@ public class UserFragment extends BaseSupportFragment implements OnClickListener
     private ShapedImageView mProfileImageView;
     private ImageView mProfileTypeView;
     private ProfileBannerImageView mProfileBannerView;
+    private View mProfileBirthdayBannerView;
     private TextView mNameView, mScreenNameView, mDescriptionView, mLocationView, mURLView, mCreatedAtView,
             mListedCount, mFollowersCount, mFriendsCount, mHeaderErrorTextView;
     private View mDescriptionContainer, mLocationContainer, mURLContainer, mListedContainer, mFollowersContainer,
@@ -196,7 +196,6 @@ public class UserFragment extends BaseSupportFragment implements OnClickListener
     private TabPagerIndicator mPagerIndicator;
     private View mPagerOverlay;
     private View mErrorOverlay;
-    private View mUuckyFooter;
     private View mProfileBannerContainer;
     private Button mFollowButton;
     private ProgressBar mFollowProgress;
@@ -554,7 +553,6 @@ public class UserFragment extends BaseSupportFragment implements OnClickListener
         final int defWidth = resources.getDisplayMetrics().widthPixels;
         final int width = mBannerWidth > 0 ? mBannerWidth : defWidth;
         mProfileImageLoader.displayProfileBanner(mProfileBannerView, user.profile_banner_url, width);
-        mUuckyFooter.setVisibility(isUucky(user.id, user.screen_name, user) ? View.VISIBLE : View.GONE);
         final Relationship relationship = mRelationship;
         if (relationship == null || relationship.getTargetUserId() != user.id) {
             getFriendship();
@@ -787,7 +785,6 @@ public class UserFragment extends BaseSupportFragment implements OnClickListener
         mProfileNameBackground.setBackgroundColor(mCardBackgroundColor);
         mProfileDetailsContainer.setBackgroundColor(mCardBackgroundColor);
         mPagerIndicator.setBackgroundColor(mCardBackgroundColor);
-        mUuckyFooter.setBackgroundColor(mCardBackgroundColor);
 
         final float actionBarElevation = ThemeUtils.getSupportActionBarElevation(activity);
         ViewCompat.setElevation(mPagerIndicator, actionBarElevation);
@@ -1090,6 +1087,7 @@ public class UserFragment extends BaseSupportFragment implements OnClickListener
         mHeaderErrorIcon = (ImageView) headerView.findViewById(R.id.error_icon);
         mProgressContainer = headerView.findViewById(R.id.progress_container);
         mProfileBannerView = (ProfileBannerImageView) view.findViewById(R.id.profile_banner);
+        mProfileBirthdayBannerView = view.findViewById(R.id.profile_birthday_banner);
         mProfileBannerContainer = view.findViewById(R.id.profile_banner_container);
         mNameView = (TextView) headerView.findViewById(R.id.name);
         mScreenNameView = (TextView) headerView.findViewById(R.id.screen_name);
@@ -1116,7 +1114,6 @@ public class UserFragment extends BaseSupportFragment implements OnClickListener
         mErrorOverlay = contentView.findViewById(R.id.error_window_overlay);
         mFollowButton = (Button) headerView.findViewById(R.id.follow);
         mFollowProgress = (ProgressBar) headerView.findViewById(R.id.follow_progress);
-        mUuckyFooter = headerView.findViewById(R.id.uucky_footer);
         mPagesContent = view.findViewById(R.id.pages_content);
         mPagesErrorContainer = view.findViewById(R.id.pages_error_container);
         mPagesErrorIcon = (ImageView) view.findViewById(R.id.pages_error_icon);
@@ -1329,7 +1326,7 @@ public class UserFragment extends BaseSupportFragment implements OnClickListener
     public void setListShown(boolean shown) {
         final TintedStatusFrameLayout tintedStatus = mTintedStatusContent;
         if (tintedStatus == null) return;
-        tintedStatus.setDrawShadow(shown);
+//        tintedStatus.setDrawShadow(shown);
     }
 
     private void getFriendship() {
@@ -1352,15 +1349,6 @@ public class UserFragment extends BaseSupportFragment implements OnClickListener
         final ParcelableUser user = mUser;
         if (user == null) return;
         getUserInfo(user.account_id, user.id, user.screen_name, omitIntentExtra);
-    }
-
-    private boolean isUucky(long userId, String screenName, Parcelable parcelable) {
-        if (userId == UUCKY_ID || UUCKY_SCREEN_NAME.equalsIgnoreCase(screenName)) return true;
-        if (parcelable instanceof ParcelableUser) {
-            final ParcelableUser user = (ParcelableUser) parcelable;
-            return user.id == UUCKY_ID || UUCKY_SCREEN_NAME.equalsIgnoreCase(user.screen_name);
-        }
-        return false;
     }
 
     private static void setCompatToolbarOverlayAlpha(FragmentActivity activity, float alpha) {
@@ -1487,6 +1475,7 @@ public class UserFragment extends BaseSupportFragment implements OnClickListener
     private void updateScrollOffset(int offset) {
         final View space = mProfileBannerSpace;
         final ProfileBannerImageView profileBannerView = mProfileBannerView;
+        final View profileBirthdayBannerView = mProfileBirthdayBannerView;
         final View profileBannerContainer = mProfileBannerContainer;
         final int spaceHeight = space.getHeight();
         final float factor = MathUtils.clamp(spaceHeight == 0 ? 0 : (offset / (float) spaceHeight), 0, 1);
@@ -1494,6 +1483,7 @@ public class UserFragment extends BaseSupportFragment implements OnClickListener
 //        profileBannerView.setTranslationY(Math.min(offset, spaceHeight) / 2);
         profileBannerContainer.setTranslationY(-offset);
         profileBannerView.setTranslationY(offset / 2);
+        profileBirthdayBannerView.setTranslationY(offset / 2);
 
         if (mActionBarBackground != null && mTintedStatusContent != null) {
             mActionBarBackground.setFactor(factor);
@@ -1520,7 +1510,8 @@ public class UserFragment extends BaseSupportFragment implements OnClickListener
                     activity.getThemeBackgroundOption());
 
             if (ThemeUtils.isTransparentBackground(activity.getCurrentThemeBackgroundOption())) {
-                stackedTabColor = ColorUtils.setAlphaComponent(stackedTabColor, ThemeUtils.getActionBarAlpha(activity.getCurrentThemeBackgroundAlpha()));
+                stackedTabColor = ColorUtils.setAlphaComponent(stackedTabColor,
+                        ThemeUtils.getActionBarAlpha(activity.getCurrentThemeBackgroundAlpha()));
             }
             final int tabColor = (Integer) sArgbEvaluator.evaluate(tabOutlineAlphaFactor, stackedTabColor, mCardBackgroundColor);
             ((ColorDrawable) tabBackground).setColor(tabColor);

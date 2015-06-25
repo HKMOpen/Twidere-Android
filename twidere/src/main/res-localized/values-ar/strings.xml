@@ -491,7 +491,6 @@
   <string name="theme_background_default">افتراضي</string>
   <string name="theme_background_solid">أبيض وأسود خالصين</string>
   <string name="theme_background_transparent">شفاف</string>
-  <string name="wizard_hint_compose_select_account">إضغط على هذه لتختار الحساب الذي تريد أن تكتب فيه.</string>
   <string name="wizard_hint_quote_format">حدد شكل الإقتباس المفضل لديك في \"الإعدادات\" - \"المحتوى والتخزين\"</string>
   <string name="wizard_hint_filters">يمكنك كتم التغريدات التي لا تريدها من الخط الزمني والإخطارات باستعمال \"قواعد الكتم\".</string>
   <string name="view_replies">عرض الردود</string>
@@ -557,7 +556,6 @@
   <string name="getting_location">يجلب الموقع</string>
   <string name="save_to_gallery">حفظ في المعرض</string>
   <string name="unknown_location">مكان مجهول</string>
-  <string name="designed_by">صمّمه</string>
   <string name="usage_statistics_notification_summary">ساعدنا كي نحسن تويدر!</string>
   <string name="hide_card_actions">إخفاء أزرار البطاقة</string>
 </resources>
